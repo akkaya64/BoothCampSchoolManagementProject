@@ -8,8 +8,16 @@ import com.schoolmanagement.payload.response.ResponseMessage;
 import com.schoolmanagement.repository.EducationTermRepository;
 import com.schoolmanagement.utils.Messages;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -69,4 +77,40 @@ public class EducationTermService {
                 .build();
 
     }
+
+    // Not :  getById() ************************************************************************
+    public EducationTermResponse get(Long id) {
+
+        // !!! ya yoksa kontrolu
+        if(!educationTermRepository.existsByIdEquals(id)) { // existsById de calisir
+            throw new ResourceNotFoundException(String.format(Messages.EDUCATION_TERM_NOT_FOUND_MESSAGE, id));
+        }
+
+        // !!! POJO - DTO donusumu ile response hazirlaniyor
+        return createEducationTermResponse(educationTermRepository.findByIdEquals(id)); // findById de calisir
+    }
+
+    // Not :  getAll() *************************************************************************
+    public List<EducationTermResponse> getAll() {
+
+        return educationTermRepository.findAll()
+                .stream()
+                .map(this::createEducationTermResponse)
+                .collect(Collectors.toList());
+    }
+
+    // Not :  getAllWithPage() ******************************************************************
+    public Page<EducationTermResponse> getAllWithPage(int page, int size, String sort, String type) {
+
+        Pageable pageable = PageRequest.of(page,size, Sort.by(sort).ascending());
+        if(Objects.equals(type, "desc")) {
+            pageable = PageRequest.of(page,size, Sort.by(sort).descending());
+        }
+
+        return educationTermRepository.findAll(pageable).map(this::createEducationTermResponse);
+    }
+    // Not :  Delete() *************************************************************************
+
+
+    // Not :  UpdateById() ********************************************************************
 }
