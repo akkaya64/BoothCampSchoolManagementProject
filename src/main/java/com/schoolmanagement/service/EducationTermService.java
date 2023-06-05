@@ -1,5 +1,5 @@
 package com.schoolmanagement.service;
-​
+
 import com.schoolmanagement.entity.concretes.EducationTerm;
 import com.schoolmanagement.exception.ResourceNotFoundException;
 import com.schoolmanagement.payload.request.EducationTermRequest;
@@ -10,7 +10,7 @@ import com.schoolmanagement.utils.Messages;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-​
+
 @Service
 @RequiredArgsConstructor
 public class EducationTermService {
