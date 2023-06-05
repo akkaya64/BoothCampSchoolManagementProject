@@ -73,7 +73,14 @@ public class ViceDeanController { //Kullanicidan gelen Requestleri Controller Cl
     @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER')")
     @PutMapping("/update/{userId}") // http://localhost:8080/vicedean/update/1
     public ResponseMessage<ViceDeanResponse> update(@RequestBody @Valid ViceDeanRequest viceDeanRequest
+       // methodun return type i ResponseMessage oalacak icerisinde <ViceDeanResponse> olacak methodun ismi
+       // update olacak parametre olarak da @RequestBody ile Json Formatta  @Valid ile valide edilmis
+       // ViceDeanRequest viceDeanRequest alacak.
             ,@PathVariable Long userId){
+        //@PathVariable ile Long data turunde userId setleyecek oldugum user a ait id gelecek.
+
+        // viceDeanService Katmanina git bunun bir .update() methodu olacak bu methodun icine  parametre olarak
+        // setlenecek olan userId ile update islemi icin kullanicidan gelen yeni viceDeanRequest kendisini veriyoruz.
         return viceDeanService.update(viceDeanRequest, userId);
     }
 
