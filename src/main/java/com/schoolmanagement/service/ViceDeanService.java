@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,12 +25,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Service
+@Service // Service kati oldugu icin annote ediliyor.
 @RequiredArgsConstructor
 public class ViceDeanService {
 
-    private final ViceDeanRepository viceDeanRepository;
-    private final AdminService adminService;
+    private final ViceDeanRepository viceDeanRepository;// Burada ViceDean logical islemleri yapmamiz icin
+    // ViceDeanRepository Classini buraya injection yapiyoruz
+    private final AdminService adminService; // AdminService checkDuplicate methodunu buradaki rolleri olusturup kayit
+    // islemini yaparken kullanabilmek icin bu class 'in icine injection yapiyoruz.
     private final ViceDeanDto viceDeanDto;
     private final UserRoleService userRoleService;
     private final PasswordEncoder passwordEncoder;
@@ -37,8 +40,26 @@ public class ViceDeanService {
     // Not :  Save() *************************************************************************
     public ResponseMessage<ViceDeanResponse> save(ViceDeanRequest viceDeanRequest) {
 
+        // Burada oncelikle responseMessage olarak donen objenin unique olmasi gereken degerlerinin
+        // (Username, Snn ve PhoneNumber)unique olup olmadiklarini denetleyerek parametre olarak verilen
+        // viceDeanRequest objesinin unique ligi kontrol etmemiz gerekiyor.
+        // Bu kontrol islemini daha once AdminService Classinda olusturdugumuz checkDuplicate methodu ile yapacagiz
+        // checkDuplicate methodunu burada kullanabilmek icin AdminService Classini injection yapiyoruz.
+
+
+        // adminService 'in checkDuplicate methoduna git orada viceDeanRequest in username 'i, ssn 'i ve
+        // phoneNumber 'ini unique olup olmadigini check et.
+        // burada bir check edilen parametre olarak verilmis 3 fielden birisinde bile eslesme Duplicate tesbit edilirse
+        // code asagiya inmez Controller katmanina gecer ve kullaniciya bir exception firlatir
         adminService.checkDuplicate(viceDeanRequest.getUsername(), viceDeanRequest.getSsn(), viceDeanRequest.getPhoneNumber());
+
+        // parametre olarak verilen degerler unique ise code asagiya iner. Burada artik DB ye kayit islemi yapilacagi
+        // icin Json formatinda olan verilerin DTO(Data Transfer Object) dan Pojo ya cevrilmesi gerekir. bunun icin
+        // asagida save() methodunun disinda createPojoFromDTO adinda yardimci bir method olustururuyoruz.
+
+
         ViceDean viceDean = createPojoFromDTO(viceDeanRequest);
+
         // Roll ve password encode islemleri
         viceDean.setUserRole(userRoleService.getUserRole(RoleType.ASSISTANTMANAGER));
         viceDean.setPassword(passwordEncoder.encode(viceDeanRequest.getPassword()));
@@ -52,8 +73,19 @@ public class ViceDeanService {
 
     }
 
+    // Donecek olan deger de Pojo olan ViceDean donecek. Cevirme islemini yapacak methoda viceDeanRequest i
+    // parametre olarak veriyoruz (ViceDeanRequest viceDeanRequest). viceDeanRequest uzerinden gelen DTO nun
+    // pojo donusumu yapilacak bunu yapmanin iki yolu yar biri burada builder methotlari ile yapabiliriz
+    // ikincisi; Bu DTO-Pojo dunusumunu yapan ayri bir class olusturulur ve o class i buraya injection yapariz.
+    // Ama burada soyle bir sorun olusuyor bu donusumu yapan calss larin uzerine @Component annotation 'u koymamiz
+    // gerekir. DTO Pojo donusumunu yapan birsuru classlar olusacak ve bunlarin uzerinde de bir suru
+    // @Component olusacak. cok farkli yerlerde @Companent ler olusuyor. Bunlari bir yerde toplayabiliriz.
+    // Classlarin uzerinde de olsa islemi SpringFramework yapiyor. Tek bir yerdde yapsakda islemi
+    // Springframework yapiyor. Bunun icin payload in altindaki dto package nin icine ViceDeanDto Classini olusturuyoruz
+    // bu classin icinde DTO- Pojo donusumunu yapan method yaziyoruz.
     private ViceDean createPojoFromDTO(ViceDeanRequest viceDeanRequest){
 
+        //DTO - Pojo
         return viceDeanDto.dtoViceBean(viceDeanRequest);
 
     }

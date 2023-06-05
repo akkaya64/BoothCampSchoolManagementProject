@@ -12,3 +12,6 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class ViceDeanRequest extends BaseUserRequest {
 }
+
+// BaseUserRequest Parent clasinin icindeki fieldlar bizim isimiz goruyor bu nedenle burada extra
+// herhangi bir code yazmiyoruz
