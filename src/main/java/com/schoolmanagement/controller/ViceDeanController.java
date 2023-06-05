@@ -88,8 +88,15 @@ public class ViceDeanController { //Kullanicidan gelen Requestleri Controller Cl
     @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER')")
     @DeleteMapping("/delete/{userId}") // http://localhost:8080/vicedean/delete/1
     public ResponseMessage<?> delete(@PathVariable Long userId){
+        // ResponseMessage generic parametre olarak hic bir deger almayacagi icin <?> diamond un icine
+        // soru isaretini koyuyoruz. silinecek olan user in id sinide @PathVariable ile kullanici login oldugunda
+        // path 'a gelen ("/delete/{userId}") userId den aliyoruz
 
-        return viceDeanService.deleteViceDean(userId);
+        return viceDeanService.deleteViceDean(userId);//Service classina git, deleteViceDean methoduna @PathVariable
+        // ile gelen userId yi parameter olarak ver diyoruz.
+
+        // yukarida olusturdugumuz returna yazdigimiz deleteViceDean(userId) methodunu Service Class da olusturmak
+        // icin create yaptikdan sonra Service katina gidip silme islemini yapiyoruz
 
     }
 
@@ -99,19 +106,23 @@ public class ViceDeanController { //Kullanicidan gelen Requestleri Controller Cl
     public ResponseMessage<ViceDeanResponse> getViceDeanById(@PathVariable Long userId) {
 
         return viceDeanService.getViceDeanById(userId);
+        // Methodunpartametresinden gelen id yi viceDeanService katmanindaki getViceDeanById methoduna gonderiyoruz.
+        // .getViceDeanById() methodunu yukarida otomatik olarak create edip Service katinin icinde olusturuyoruz
 
     }
 
     // Not :  getAll() *************************************************************************
     @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER')")
     @GetMapping("/getAll")  // http://localhost:8080/vicedean/getAll
-    public List<ViceDeanResponse> getAll(){
+    public List<ViceDeanResponse> getAll(){ // burada bir message dondurmyecegiz,  kullanicilarin hepsi getirecegimiz
+        // icin List yapiyi kullaniyoruz. ekstra bir parametreye gerek yok tum kullanicilar gelecek
         return viceDeanService.getAllViceDean();
     }
 
     // Not :  getAllWithPage() ********************************************************************
     @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER')")
-    @GetMapping("/search")
+    @GetMapping("/search")// burada aslinda bir filitreleme islemi yapilacagi icin mapping i search yapiyoruz
+    // bu mappin bize pageable bir yapi dondurecek bunun icin asagida Page turunde bir yapi kuruyoruz.
     public Page<ViceDeanResponse> getAllWithPage(
             @RequestParam(value = "page") int page,
             @RequestParam(value = "size") int size,
@@ -120,6 +131,7 @@ public class ViceDeanController { //Kullanicidan gelen Requestleri Controller Cl
     ) {
 
         return viceDeanService.getAllWithPage(page,size,sort,type);
+        //bu yapiyi artik Service katmanina gonderiyoruz.
 
     }
 
