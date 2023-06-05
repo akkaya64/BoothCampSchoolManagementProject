@@ -224,14 +224,19 @@ public class ViceDeanService {
     // Not :  Delete() *************************************************************************
     public ResponseMessage<?> deleteViceDean(Long managerId) {
 
+        // Delete edilecek kullanici DB de varmi diye id ile kontrol edilecek(Id li kullanici Db de varmi kontrol
+        // etme islemini sik olarak kullaniyoruz. bunun icin yeni bir class olusturup orada generic bir
+        // method yazilabilir.)
         Optional<ViceDean> viceDean = viceDeanRepository.findById(managerId);
 
         if(!viceDean.isPresent()) {
             throw new ResourceNotFoundException(String.format(Messages.NOT_FOUND_USER2_MESSAGE,managerId));
         }
 
-        viceDeanRepository.deleteById(managerId);
+        viceDeanRepository.deleteById(managerId); // viceDeanRepository nin Springframeworkundan gelen deleteById()
+        // methodu na Db den gelen managerId yi kullanarak user i siliyoruz.
 
+        //Kullaniciya islem ile ilgili bir messaj ve status gonderiyoruzz. obje silindigi icin objenin kendisini gondermiyoruz
         return ResponseMessage.builder()
                 .message("Vice Dean Deleted")
                 .httpStatus(HttpStatus.OK)
@@ -251,7 +256,8 @@ public class ViceDeanService {
         return ResponseMessage.<ViceDeanResponse>builder()
                 .message("Vice Dean Successfully Found")
                 .httpStatus(HttpStatus.OK)
-                .object(createViceDeanResponse(viceDean.get()))
+                .object(createViceDeanResponse(viceDean.get()))//viceDean Optional bir yapinin icinde oldugu icin direkt
+                //bunun icin springFrameWork den gelen get() methodunu kullaniyoruz getiremiyoruz
                 .build();
 
     }
@@ -259,10 +265,15 @@ public class ViceDeanService {
     // Not :  getAll() *************************************************************************
     public List<ViceDeanResponse> getAllViceDean() {
 
+        // Lambda
+        // Bilgiler DB den gelecegi icin pojo olacak, oncelikle bunu DTO ya cevirip List yapida dondurecegiz
         return viceDeanRepository.findAll()
                 .stream()
+                //stream API ile bir akis olustur....
                 .map(this::createViceDeanResponse)
-                .collect(Collectors.toList());
+                // viceDeanRepository den gelen pojo olan bu(this) akisi createViceDeanResponse dan Json yapiya
+                // donusturerek akisa devam et
+                .collect(Collectors.toList()); // Collector yapisi ile json yapiyi List haline cevir.
     }
 
     // Not :  getAllWithPage() ********************************************************************
