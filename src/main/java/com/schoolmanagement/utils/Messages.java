@@ -13,4 +13,9 @@ public class Messages {
     //Baska yerde de kullanabiliriz bi nedenle id bilgisini yazmiyoruz.
     public static final String NOT_FOUND_USER2_MESSAGE = "Error: User not found with id %s" ;
 
+
+    public static final String EDUCATION_START_DATE_IS_EARLIER_THAN_LAST_REGISTRATION_DATE = "Error: The start date cannot be earlier than th last registration date " ;
+    public static final String EDUCATION_END_DATE_IS_EARLIER_THAN_START_DATE = "Error: The end date cannot be earlier than the start date " ;
+
+    public static final String EDUCATION_TERM_IS_ALREADY_EXIST_BY_TERM_AND_YEAR_MESSAGE = "Error: Education Term with Term And Year already exist " ;
 }
