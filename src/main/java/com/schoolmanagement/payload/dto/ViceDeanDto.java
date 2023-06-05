@@ -12,6 +12,7 @@ public class ViceDeanDto {
     // Burada artik pojo dunusumu olacagi icin kullanicini girdigi request 'i parametre olarak giriyoruz
     // (ViceDeanRequest viceDeanRequest).
     public ViceDean dtoViceBean(ViceDeanRequest viceDeanRequest){
+     // ViceDeanRequest viceDeanRequest DTO  su, dtoViceBean classini kullanilarak Pojo olan ViceDean turune ceviriyor.
 
 
         return ViceDean.builder()
