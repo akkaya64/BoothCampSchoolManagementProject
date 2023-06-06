@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+
 import java.util.stream.Collectors;
 
 @Service
@@ -109,8 +110,55 @@ public class EducationTermService {
 
         return educationTermRepository.findAll(pageable).map(this::createEducationTermResponse);
     }
-    // Not :  Delete() *************************************************************************
 
+    // Not :  Delete() *************************************************************************
+    public ResponseMessage<?> delete(Long id) {
+
+
+        if(!educationTermRepository.existsByIdEquals(id)) {
+            throw new ResourceNotFoundException(String.format(Messages.EDUCATION_TERM_NOT_FOUND_MESSAGE, id));
+        }
+
+        educationTermRepository.deleteById(id);
+
+        return ResponseMessage.builder()
+                .message("Education Term Deleted")
+                .httpStatus(HttpStatus.OK)
+                .build();
+
+
+    }
 
     // Not :  UpdateById() ********************************************************************
+    public ResponseMessage<EducationTermResponse> update(EducationTermRequest newEduTerm, Long id) {
+
+
+        if(!educationTermRepository.existsByIdEquals(id)) {
+            throw new ResourceNotFoundException(String.format(Messages.EDUCATION_TERM_NOT_FOUND_MESSAGE, id));
+        }
+
+        if(educationTermRepository.existsByTermAndYear(newEduTerm.getTerm(), newEduTerm.getStartDate().getYear())) {
+            throw  new ResourceNotFoundException(Messages.EDUCATION_TERM_IS_ALREADY_EXIST_BY_TERM_AND_YEAR_MESSAGE);
+        }
+
+        EducationTerm updateEduTerm = createUpdateEduTerm(newEduTerm);
+
+        educationTermRepository.save(updateEduTerm);
+
+        return ResponseMessage.<EducationTermResponse>builder()
+                .message("Education Term Updated")
+                .object(createEducationTermResponse(updateEduTerm))
+                .httpStatus(HttpStatus.CREATED)
+                .build();
+    }
+
+    private EducationTerm createUpdateEduTerm(EducationTermRequest educationTermRequest){
+        return EducationTerm.builder()
+                .term(educationTermRequest.getTerm())
+                .startDate(educationTermRequest.getStartDate())
+                .endDate(educationTermRequest.getEndDate())
+                .lastRegistrationDate(educationTermRequest.getLastRegistrationDate())
+                .build();
+    }
+
 }
