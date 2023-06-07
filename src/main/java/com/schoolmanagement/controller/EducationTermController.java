@@ -56,20 +56,29 @@ public class EducationTermController {
     // Not :  Delete() *************************************************************************
     @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER')")
     @DeleteMapping("/delete/{id}") // http://localhost:8080/educationTerms/delete/1
-    public ResponseMessage<?> delete(@PathVariable Long educationId){//Best Practice olani id nin basina bir tanimlaa kelimesi
+    public ResponseMessage<?> delete(@PathVariable Long id){//Best Practice olani id nin basina bir tanimlaa kelimesi
         // kullanilmasi gerekir. mesela bu id education da kullanilan id  gibi educationId
 
-        return educationTermService.delete(educationId);
+        return educationTermService.delete(id);
 
     }
 
+//    // Not :  UpdateById() ********************************************************************
+//    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER')")
+//    @DeleteMapping("/update/{id}") // http://localhost:8080/educationTerms/update/1
+//    public ResponseMessage<EducationTermResponse> update(@PathVariable Long id,
+//                                                         @RequestBody @Valid EducationTermRequest educationTermRequest){
+//
+//        return educationTermService.update(id, educationTermRequest);
+//
+//    }
+
     // Not :  UpdateById() ********************************************************************
     @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER')")
-    @DeleteMapping("/update/{id}") // http://localhost:8080/educationTerms/update/1
-    public ResponseMessage<EducationTermResponse> update(@RequestBody @Valid EducationTermRequest termRequest
-            ,@PathVariable Long id){
-
-        return educationTermService.update(termRequest, id);
+    @PutMapping("/update/{id}")  // http://localhost:8080/educationTerms/update/1
+    public ResponseMessage<EducationTermResponse> update(@PathVariable Long id,
+                                                         @RequestBody @Valid EducationTermRequest educationTermRequest){
+        return educationTermService.update(id, educationTermRequest);
 
     }
 
