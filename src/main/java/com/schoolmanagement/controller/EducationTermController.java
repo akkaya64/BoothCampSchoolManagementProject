@@ -55,16 +55,17 @@ public class EducationTermController {
 
     // Not :  Delete() *************************************************************************
     @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER')")
-    @DeleteMapping("/delete/{id}") // http://localhost:8080/vicedean/delete/1
-    public ResponseMessage<?> delete(@PathVariable Long id){
+    @DeleteMapping("/delete/{id}") // http://localhost:8080/educationTerms/delete/1
+    public ResponseMessage<?> delete(@PathVariable Long educationId){//Best Practice olani id nin basina bir tanimlaa kelimesi
+        // kullanilmasi gerekir. mesela bu id education da kullanilan id  gibi educationId
 
-        return educationTermService.delete(id);
+        return educationTermService.delete(educationId);
 
     }
 
     // Not :  UpdateById() ********************************************************************
     @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER')")
-    @DeleteMapping("/update/{id}") // http://localhost:8080/vicedean/delete/1
+    @DeleteMapping("/update/{id}") // http://localhost:8080/educationTerms/update/1
     public ResponseMessage<EducationTermResponse> update(@RequestBody @Valid EducationTermRequest termRequest
             ,@PathVariable Long id){
 
