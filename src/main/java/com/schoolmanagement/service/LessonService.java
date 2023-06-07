@@ -2,20 +2,31 @@ package com.schoolmanagement.service;
 
 import com.schoolmanagement.entity.concretes.Lesson;
 import com.schoolmanagement.exception.ConflictException;
+import com.schoolmanagement.exception.ResourceNotFoundException;
 import com.schoolmanagement.payload.request.LessonRequest;
 import com.schoolmanagement.payload.response.LessonsResponse;
 import com.schoolmanagement.payload.response.ResponseMessage;
 import com.schoolmanagement.repository.LessonRepository;
 import com.schoolmanagement.utils.Messages;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class LessonService {
     private final LessonRepository lessonRepository;
 
+    // Not :  Save() *************************************************************************
     public ResponseMessage<LessonsResponse> save(LessonRequest lessonRequest) {
         // Hey!!! Hosgeldiniz bu Classi sizin olusturdugunuzu asla unutmayacagiz size cok minnettariz Artik Service
         // katindasiniz bu cok harika degil mi :) burada neler yapabileceginizi bir dusunsenize :) Lutfen kayit yapmak
@@ -102,6 +113,83 @@ public class LessonService {
                 .creditScore(lesson.getCreditScore())
                 .isCompulsory(lesson.getIsCompulsory())
                 .build();
+    }
+
+
+    // Not :  Delete() *************************************************************************
+    public ResponseMessage deleteLesson(Long id) {
+
+        // Simdiye kadar Springframework den gelen existBy ile keyword u nunu gelistirip  oyle  calistin ama artik
+        // bunu sindirdiysen, anladiysan bunun nasil calistigini senin icin daha iyi bir yolumuz var o da orElseThrow...
+        // Bunun tatini cikart dostum :)
+        Lesson lesson = lessonRepository.findById(id).orElseThrow(()->{
+            // Spring den gelen findById ile de calisabilirsin dostm, findById ye methoda verdigimiz parametreyi objeyi
+            // bulmasi icin verirsin. Note: findById Optional bir yapi dondur.
+            // findById Optional bir yapi dondudugu icin spring in orElseThrow() methodunu kullanabilirsin..
+            // orElseThrow() methodundan sonra Lamda ile exception firlatabilirisin. harika degilmi dostum :) benden
+            // sana tavsiye firsatini buldukca bu sekilde yaz gitsin basit sade siple anlasilir fazla code
+            // kalabaligina gerek yok
+            return new ResourceNotFoundException(String.format(Messages.NOT_FOUND_LESSON_MESSAGE, id));//Dostum Dostum
+            // umarim util deki message clasinda buna uygun bir uyari mesaji olusturmussundur . zaten olusturmadiysa
+            // kirmizi ile CTE hatasi alirsin gerci, RTE hatasi almaktan bin kat daha iyidir ama hata hatadir.
+        });
+
+        lessonRepository.deleteById(id);//Tebrikler!!! sildin ama dikkatli ol danisarak sil....
+        //Repoya hic gitmeye gerek kalmadi cunku hazir CRUD operasyonlarini kullandik
+
+        return ResponseMessage.builder()
+                .message("Lesson is deleted successfully")
+                .httpStatus(HttpStatus.OK)
+                .build();
+    }
+
+    // Not :  getLessonByLessonName() **********************************************************
+    public ResponseMessage<LessonsResponse> getLessonByLessonName(String lessonName) {
+
+        Lesson lesson = lessonRepository.getLessonByLessonName(lessonName).orElseThrow(()->{
+            // Dostum oncelikle LessonRepository classinda getLessonByLessonName adindaki methodu olustur
+            // yukaridaki code blogu bir lesson donecegi icin method orada olusunca generic yapisini Lesson olarak
+            // degistirmey unutma
+
+            // Hey.. Sen sen evet sen sayin Developer getLessonByLessonName((lessonName))aslinda turetilen bir method
+            // bu method dan sonra orElseThrow() methodunu setleyerek getLessonByLessonName() methodunun Optional bir
+            // yapiya sahip olacagini belirtmis oluyorsun. Burada Hemen lambda expression i yaz gec....
+            // lesson bulunamadi diye mesaji ben gonderirirm sen hixc merak etme cunku
+            return new ResourceNotFoundException(String.format(Messages.NOT_FOUND_LESSON_MESSAGE, lessonName));
+        });
+
+        // Kullaniciya herzamanki mesajimizi, status kodumuzu ve objemizi verelim degil mi?
+
+        return ResponseMessage.<LessonsResponse>builder()
+                .message("Lesson Successfully found")
+                .object(createLessonResponse(lesson))
+                .build();
+    }
+
+    // Not :  getAllLesson() **********************************************************************
+    public List<LessonsResponse> getAllLesson() {
+
+        return lessonRepository.findAll()
+                .stream()
+                .map(this::createLessonResponse)
+                .collect(Collectors.toList());
+    }
+
+    // Not :  getAllWithPage() **********************************************************
+    public Page<LessonsResponse> search(int page, int size, String sort, String type) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
+        if(Objects.equals(type,"desc")) {
+            pageable = PageRequest.of(page,size,Sort.by(sort).descending());
+        }
+
+        return lessonRepository.findAll(pageable).map(this::createLessonResponse);
+    }
+
+    // Not :  getAllLessonByLessonIds() *****************************************************
+    public Set<Lesson> getLessonByLessonIdList(Set<Long> lessons) {
+
+        return lessonRepository.getLessonByLessonIdList(lessons);
     }
 
 
