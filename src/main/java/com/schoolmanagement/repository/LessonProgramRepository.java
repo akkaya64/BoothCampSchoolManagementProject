@@ -2,9 +2,11 @@ package com.schoolmanagement.repository;
 
 import com.schoolmanagement.entity.concretes.LessonProgram;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public interface LessonProgramRepository extends JpaRepository<LessonProgram, Long> {
     // Merhaba Projeye yeni bir Ozellik eklmede yine birlikteyiz :) bu cok
@@ -30,5 +32,9 @@ public interface LessonProgramRepository extends JpaRepository<LessonProgram, Lo
     List<LessonProgram> findByTeachers_IdNotNull();
     //LessonProgram tablosuna git teacher header lari null olmayanlari getir diyoruz
 
-    List<LessonProgram> getLessonProgramByTeacherUsername(String username);
+    @Query("SELECT l FROM LessonProgram l inner join l.teachers teachers where teachers.username = ?1")
+    Set<LessonProgram> getLessonProgramByTeacherUsername(String username);
+
+    @Query("SELECT l FROM LessonProgram l inner join l.students students WHERE students.username =?1")
+    Set<LessonProgram> getLessonProgramByStudentUsername(String username);
 }
