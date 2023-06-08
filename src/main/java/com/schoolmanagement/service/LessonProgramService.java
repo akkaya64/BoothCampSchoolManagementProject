@@ -9,6 +9,7 @@ import com.schoolmanagement.entity.concretes.Lesson;
 import com.schoolmanagement.entity.concretes.LessonProgram;
 import com.schoolmanagement.exception.BadRequestException;
 import com.schoolmanagement.exception.ResourceNotFoundException;
+import com.schoolmanagement.payload.dto.LessonProgramDto;
 import com.schoolmanagement.payload.request.LessonProgramRequest;
 import com.schoolmanagement.payload.response.LessonProgramResponse;
 import com.schoolmanagement.payload.response.ResponseMessage;
@@ -16,9 +17,12 @@ import com.schoolmanagement.repository.LessonProgramRepository;
 import com.schoolmanagement.utils.Messages;
 import com.schoolmanagement.utils.TimeControl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service // hey buraya bu annotationu koyman cok akillaca cok iyi gidiyosun bir isik var sende :) well done, keep going.
 // bunun icinde aslinda @Component annotation da var. Yani bu Classtan bir instance olustugu anda default olarak
@@ -34,7 +38,9 @@ public class LessonProgramService {
 
     private final LessonService lessonService;// Lessonlari getirecegiz
     private final EducationTermService educationTermService; //termleri getirrecegiz cunku LessonPrograma term
-    // bilgisi de eklemeliyiz
+    // bilgisi de eklemeliyiz.
+    private final LessonProgramDto lessonProgramDto;
+
 
 
     // Not :  Save() *************************************************************************
@@ -72,8 +78,74 @@ public class LessonProgramService {
         // kontrol edilmesi lazim, Kontrol islemlerini zaman kontrolu yapmak isteyen farkli class lar da da
         // kullanabilmek icin utuls packagesinin icinde bir method yazip burada cagiracagiz...
 
+        // Oncelikle kullanicadan gelen bilgileri DTO ya ceviren lessonProgramRequestToDTO methodunu yaziyoruz...
+        // daha sonra request den gelen Json formatindaki datalari asagida lessonProgram repository e gonderebilmek icin
+        // Pojo turunde ki lessonProgram konteynirina atiyorum
+        LessonProgram lessonProgram = lessonProgramRequestToDTO(request,lessons);
+
+        // lessonProgram konteynirinda EducationTerm bilgisi yok bunu da eklememiz lazim.
+        lessonProgram.setEducationTerm(educationTerms);
+
+        // Artik hersey hazir simdi DB de kalici hale getirebiliriz
+        LessonProgram sevedLessonProgram = lessonProgramRepository.save(lessonProgram);
+
+        // ResponseMessage objesi donduruyoruz... once pojo-->DTO donusumunu yapacak
+        // createLessonProgramResponseForSaveMethod adindaki methodu bu class icinde yaziyoruz
+        return ResponseMessage.<LessonProgramResponse>builder()
+                .message("Lesson Program is Created")
+                .httpStatus(HttpStatus.CREATED)
+                .object(createLessonProgramResponseForSaveMethod(sevedLessonProgram))
+                .build();
+    }
+
+    private LessonProgram lessonProgramRequestToDTO(LessonProgramRequest lessonProgramRequest, Set<Lesson> lessons){
+       return lessonProgramDto.dtoLessonProgram(lessonProgramRequest , lessons);
+    }
+
+    private LessonProgramResponse createLessonProgramResponseForSaveMethod(LessonProgram lessonProgram) {
+        return LessonProgramResponse.builder()
+                .day(lessonProgram.getDay())
+                .startTime(lessonProgram.getStartTime())
+                .stopTime(lessonProgram.getStopTime())
+                .lessonProgramId(lessonProgram.getId())
+                .lessonName(lessonProgram.getLesson())
+                .build();
+    }
 
 
+    // Not :  getAll() *************************************************************************
+    public List<LessonProgramResponse> getAllLessonProgram() {
+
+        return lessonProgramRepository.findAll()
+                .stream()
+                .map(this::createLessonProgramResponse)
+                .collect(Collectors.toList());
+
+    }
+    public LessonProgramResponse createLessonProgramResponse(LessonProgram lessonProgram) {
+        return LessonProgramResponse.builder()
+                .day(lessonProgram.getDay())
+                .startTime(lessonProgram.getStartTime())
+                .stopTime(lessonProgram.getStopTime())
+                .lessonProgramId(lessonProgram.getId())
+                .lessonName(lessonProgram.getLesson())
+                //TODO Teacher ve Student yazilinca buraya ekleme yapilacak
+                .build();
+    }
+
+    // Not :  getById() ************************************************************************
+    public LessonProgramResponse getByLessonProgramId(Long id) {
+
+        LessonProgram lessonProgram =  lessonProgramRepository.findById(id).orElseThrow(()->{
+            throw new ResourceNotFoundException(String.format(Messages.NOT_FOUND_LESSON_MESSAGE,id) );
+        });
+
+        // return lessonProgramRepository.findById(id).map(this::createLessonProgramResponse).get();
+        return createLessonProgramResponse(lessonProgram);
+    }
+
+    // Not :  getAllLessonProgramUnassigned() **************************************************
+    public List<LessonProgramResponse> getAllLessonProgramUnassigned() {
 
     }
 
