@@ -10,8 +10,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Set;
 
 @RestController// tam da isleri kolaylastirmak icin ihtiyacim olan takim cantasi
 @RequestMapping("/lessonPrograms")// kesinlikle requsetleri burada karilayacaksin dostum harikasin... Gelenleri
@@ -47,9 +49,55 @@ public class LessonProgramController {
     }
 
     // Not :  getAllLessonProgramUnassigned() **************************************************
+    // Henuz Teacher atamasi yapilmamais LessonProgram lar
     @GetMapping("/getAllUnassigned") //http://localhost:8080/lessonPrograms/getAllUnassigned
     @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER','TEACHER','STUDENT')")
     public List<LessonProgramResponse> getAllUnassigned() {
         return lessonProgramService.getAllLessonProgramUnassigned();
     }
+
+    // Not :  getAllLessonProgramAssigned() **************************************************
+    @GetMapping("/getAllAssigned") //http://localhost:8080/lessonPrograms/getAllAssigned
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER','TEACHER','STUDENT')")
+    public List<LessonProgramResponse> getAllAssigned() {
+        return lessonProgramService.getAllLessonProgramAssigned();
+    }
+
+    // Not :  Delete() *************************************************************************
+    @DeleteMapping("/delete/{id}") //http://localhost:8080/lessonPrograms/delete/1
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    public ResponseMessage delete (@PathVariable Long id) {
+        return lessonProgramService.deleteLessonProgram(id);
+    }
+
+    // Not :  getLessonProgramByTeacher() ******************************************************
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @GetMapping("/getAllLessonProgramByTeacher")  //http://localhost:8080/lessonPrograms/getAllLessonProgramByTeacher
+    // Bu endpointi farkli bir sekilde calisacagiz. datayi daha once yaptiklarimizda endpointin icinden olusan {id} gibi
+    // field isimlerinden @PathVariable ile iliskilendiriyorduk bu fieldin ismi endpoint de gorunmesin ama silinecek
+    // olan objeye ait bilgileri almam lazim diyorsak o zaman bunun ikinci yolu da request uzerinden gonderebiliriz
+    // Request ler aslinda birer API packagaler bunlarin attribute leri var bu attributelerin uzerine yeni bilgiler
+    // setleyebiliriz. Bu attribute ler uzerinden uniue degerler uzerinden alabiliriz. HttpServletRequest ile gelen
+    // requeste ulasabiliriz ve bu request uzerinde herhangi bir islem yapabiliriz. Bir request olacakki asagidaki
+    // methoda dallanabilelim. Ve bu methodun dallanmamiza sebeb olan requestte de bu method icinden ulasabiliyoruz
+    // ulasabiliyoruz.
+    public Set<LessonProgramResponse> getAllLessonProgramByTeacherId(HttpServletRequest httpServletRequest) {
+
+        String username = (String) httpServletRequest.getAttribute("username");// httpServletRequest in
+        // .getAttribute() diye bir methodu var, bu string bir deger aliyor buraya kullanicinin unique bir degeri olan
+        // "username" i parametre olarak veriyoruz. Ve bu String bir deger aliyor bu nedenle httpServletRequest e cast
+        // islemi yapiyoruz (String) ve buradan gelen bilgiyi String data turunde username isimli bir
+        // veriable ye atiyoruz
+        return lessonProgramService.getLessonProgramByTeacher(username);
+
+        // Bu Datayi:
+        // @PathVariable
+        // @RequestParam
+        // HttpServletRequest
+        // Anlik olarak login olan kullaniciya ulasmak icin SpringSecurit in bir methodu olan getPrincipal()
+        // yollorindan birini kullanabilriz.
+
+
+    }
+
 }

@@ -18,7 +18,10 @@ import com.schoolmanagement.utils.Messages;
 import com.schoolmanagement.utils.TimeControl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 import java.util.Set;
@@ -147,8 +150,62 @@ public class LessonProgramService {
     // Not :  getAllLessonProgramUnassigned() **************************************************
     public List<LessonProgramResponse> getAllLessonProgramUnassigned() {
 
+        return lessonProgramRepository.findByTeachers_IdNull()
+                // Pojo yu DTO ya ceviriyoruz
+                // stream ile pojo olarak bir akis gelecek bu akisdan gelen datalari map ile
+                // seve methodunda kullandigimiz  createLessonProgramResponse methoduna arguman olarak gonder diyoruz
+                // hala String olarak geliyor gelen string datayi Collectors un toList() methodu ile topla-collec ve
+                // dondur diyoruz
+                .stream()
+                .map(this::createLessonProgramResponse)
+                .collect(Collectors.toList());
+    }
+
+    // Not :  getAllLessonProgramAssigned() **************************************************
+    public List<LessonProgramResponse> getAllLessonProgramAssigned() {
+
+        return lessonProgramRepository.findByTeachers_IdNotNull()
+                .stream()
+                .map(this::createLessonProgramResponse)
+                .collect(Collectors.toList());
     }
 
 
+    // Not :  Delete() *************************************************************************
+    public ResponseMessage deleteLessonProgram(Long id) {
+        // !!! id kontrolu
+        lessonProgramRepository.findById(id).orElseThrow(()->{
+            throw new ResourceNotFoundException(String.format(Messages.NOT_FOUND_LESSON_MESSAGE,id));
+        });
+
+        lessonProgramRepository.deleteById(id);
+
+        // !!! bu lessonPrograma dahil olan teacher ve student lardada degisiklik yapilmasi gerekiyor , biz bunu
+        //  lessonProgram entity sinifi icinde @PreRemove ile yaptik
+
+        return ResponseMessage.builder()
+                .message("Lesson Program is deleted Successfully")
+                .httpStatus(HttpStatus.OK)
+                .build();
+    }
+
+    // Not :  getLessonProgramByTeacher() ******************************************************
+    public Set<LessonProgramResponse> getLessonProgramByTeacher(String username) {
+        return lessonProgramRepository.getLessonProgramByTeacherUsername(username)
+                .stream()
+                .map(this::createLessonProgramResponseForTeacher)
+                .collect(Collectors.toSet());
+    }
+
+    public LessonProgramResponse createLessonProgramResponseForTeacher(LessonProgram lessonProgram) {
+        return LessonProgramResponse.builder()
+                .day(lessonProgram.getDay())
+                .startTime(lessonProgram.getStartTime())
+                .stopTime(lessonProgram.getStopTime())
+                .lessonProgramId(lessonProgram.getId())
+                .lessonName(lessonProgram.getLesson())
+                //TODO Student yazilinca buraya ekleme yapilacak
+                .build();
+    }
 }
 
