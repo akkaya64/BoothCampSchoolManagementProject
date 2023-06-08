@@ -17,7 +17,7 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
     Optional<Lesson> getLessonByLessonName(String lessonName);
 
 
-    @Query(value = "SELECT l FROM Lesson l WHERE l.LessonId IN : lesson")
+    @Query(value = "SELECT l FROM Lesson l WHERE l.lessonId IN :lessons")
         // Bu Query in acilimi;
         // SELECT l lessonlari getir. nereden?
         // FROM Lesson, lesson tablomdan. hangilerini?

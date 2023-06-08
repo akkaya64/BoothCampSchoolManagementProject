@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.stream.DoubleStream;
 
 public interface ContactMessageRepository extends JpaRepository<ContactMessage, Long> {
+    //
 
     boolean existsByEmailEqualsAndDateEquals(String email, LocalDate now);
 
