@@ -16,9 +16,9 @@ public interface LessonProgramRepository extends JpaRepository<LessonProgram, Lo
     // olan id nin data type ni yaziyoruz. aynen su sekilde: <LessonProgram, Long> . Artik LessonProgramRepository
     // Springframework un JpaRepository interfacesini kullanarak LessonProgram, Long ozelliginde bir repository
     // katmani olusturduk...
-    // Simdi tam da bir Service katmani olusturmanin zamani
+    // Haydi simdi tam da bir Service katmani olusturmanin zamani
 
-    //Collection<Object> findByTeachers_IdNull();//Service katmanindan otomatik olarak olusturulan bir yardimci method
+    // Collection<Object> findByTeachers_IdNull();//Service katmanindan otomatik olarak olusturulan bir yardimci method
     // findByTeachers_IdNull() bize Collection<Object>
     // Collection yapida ki oda service katinda List yapi da olusturuldu
     // <Object> generic olarak da LessonProgram donecek
@@ -36,5 +36,13 @@ public interface LessonProgramRepository extends JpaRepository<LessonProgram, Lo
     Set<LessonProgram> getLessonProgramByTeacherUsername(String username);
 
     @Query("SELECT l FROM LessonProgram l inner join l.students students WHERE students.username =?1")
+        //LessonProgram a alliance olarak l diyoruz
+    // SELECT l FROM LessonProgram l; LessonProgram dan butun lesson program lari getir. Ama gelecek olan lesson
+    // programin bir ozelligi olmali
+    // inner join l.students students; LessonProgram in iliskili oldugu bir students tablosu var buradaki student
+    // tablosundaki username bilgisine gore LessonProgram tablosundaki sutudent'e ait bilgileri getir.
+    // WHERE students.username =?1 ; Asagidaki paremetrede verilen ilk parametre neyse onu getir
     Set<LessonProgram> getLessonProgramByStudentUsername(String username);
+
+
 }

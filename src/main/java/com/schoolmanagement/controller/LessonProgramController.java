@@ -96,8 +96,8 @@ public class LessonProgramController {
         // @RequestParam
         // HttpServletRequest
         // @RequestBody
-        //Asagidaki yanlis bilgi: anlik olan kullanicinin bilgilerini gonderir
-        // Anlik olarak login olan kullaniciya ulasmak icin SpringSecurit in bir methodu olan getPrincipal()
+        // Asagidaki yanlis bilgi: anlik olan kullanicinin bilgilerini gonderir
+        // Anlik olarak login olan kullaniciya ulasmak icin SpringSecurit in bir methodu olan @getPrincipal()
         // yollorindan birini kullanabilriz. Hocam Methodu gonderebilirmisiniz
     }
 
@@ -105,8 +105,25 @@ public class LessonProgramController {
     @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER','STUDENT','TEACHER')")
     @GetMapping("/getAllLessonProgramByStudent") //http://localhost:8080/lessonPrograms/getAllLessonProgramByStudent
     public Set<LessonProgramResponse> getAllLessonProgramByStudent(HttpServletRequest httpServletRequest) {
+        // HttpServletRequest Classini almamizin sebebi Requestteki unique bir deger olan username ulasmak.
 
+        // @getPrincipal() methodu o an currently login olan kullanicinin id si uzerinden kullaniciyi getirecegi icin
+        // mesela bir Teacher bir Studenti getirmek istediginde o an kendisi login oldugu icin user bilgisi olarak
+        // kendi bilgileri gelir. Bir ogrenci kendi Lesson Programina bakmak istediginde @getPrincipal() ile kendi
+        // id si gelecegi icin kendine ait LessonProgrami cagirabilir.
+
+        // @RequestBody ile bir Json dosya olarak da alabiliriz Requestin body sinde username ne ise onun uzerinden
+        // ihtiyacimiz ne ise onu getirebiliriz.
+
+
+        //Asagidaki statamenti Service Layer de de yazabiriz
         String username = (String) httpServletRequest.getAttribute("username");
+        // httpServletRequest Class inin .getAttribute() diye bir methodu var bunun ile ("username") in value sini getir
+        // .getAttribute methodu gelen objein data turune bakmaz.. bu method ne gelecegini bilmedigi icin Obje yi en
+        // parent data type olan Object olarak donduruyor bu nedenle String bir Variable nin icine atilacaksa gelen
+        // obje Object degerini Casting yapmaliyiz burada String bir data turune sahip bir variable ye atanacagi icin
+        // (String) ile casting islemi yapiliyor
+
         return lessonProgramService.getLessonProgramByStudent(username);
     }
 

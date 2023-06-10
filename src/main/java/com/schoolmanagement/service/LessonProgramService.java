@@ -216,9 +216,17 @@ public class LessonProgramService {
     // Not :  getLessonProgramByStudent() ******************************************************
     public Set<LessonProgramResponse> getLessonProgramByStudent(String username) {
 
+        // lessonProgramRepository classina git oradaki .getLessonProgramByStudentUsername(username) methodu ile
+        //  bu statament bir Pojo donduruyor bunu bize bir DTO olarak donmesi gerekiyor.
         return lessonProgramRepository.getLessonProgramByStudentUsername(username)
+                // lessonProgramRepository classindan .getLessonProgramByStudentUsername(username) methodu ile DB den
+                // POJO olarak gelen stream akisini
                 .stream()
+                // map ile lessonProgramRepository.getLessonProgramByStudentUsername(username) buradan gelen POJO
+                // username bilgilerini asagida pojo -> DTO donusumunu yapan yardimci methodunu kullanarak
+                // DTO ya cevirip
                 .map(this::createLessonProgramResponseForStudent)
+                // donusumu yapilan data lari Set yapida tutuyoruz
                 .collect(Collectors.toSet());
     }
 

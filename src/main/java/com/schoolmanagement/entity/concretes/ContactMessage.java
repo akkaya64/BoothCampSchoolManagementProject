@@ -22,12 +22,14 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Builder(toBuilder = true) // It allows us to make changes by making a copy of the existing object instead of
                            // creating a new object.
-public class ContactMessage implements Serializable {// There is a lot of unnecessary information in the
-    // json output. we just format the data we want in a more beautiful way, only the date information will come.
+public class ContactMessage implements Serializable {//
+
+
+    // In this class, when an Anonymous user wants to ask something without registration, we need to get some
+    // data from this user.
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) //In this class, when an Anonymous user wants to ask something
-                                                        // without registration, we need to get some data from this user.
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotNull
