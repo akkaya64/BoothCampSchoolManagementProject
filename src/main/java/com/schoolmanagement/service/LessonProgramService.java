@@ -253,5 +253,15 @@ public class LessonProgramService {
 
         return lessonProgramRepository.findAll(pageable).map(this::createLessonProgramResponse);
     }
+
+    // Not: getLessonProgramById() ***************************************************************
+    public Set<LessonProgram> getAllLessonProgramById(Set<Long> lessonsIdList) {
+        // Kendimiz LessonProgramlari Db den getirmek icin LessonProgramRepository katmanina gidecegiz orada assagida
+        // .getLessonProgramByLessonIdList() olarak verdigimiz method ile DB den TeacherRequestten gelen Lesson nun id
+        // sini kullanarak LessonProgram lari getirecegiz . Bunu lessonProgramRepository Katmaninda
+        // .getLessonProgramByLessonIdList() methodunun icinde yapacagimiz Query ile yapacagiz
+        return lessonProgramRepository.getLessonProgramByLessonIdList(lessonsIdList);
+
+    }
 }
 

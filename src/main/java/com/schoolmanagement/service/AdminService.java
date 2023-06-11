@@ -7,6 +7,7 @@ import com.schoolmanagement.payload.request.AdminRequest;
 import com.schoolmanagement.payload.response.AdminResponse;
 import com.schoolmanagement.payload.response.ResponseMessage;
 import com.schoolmanagement.repository.*;
+import com.schoolmanagement.utils.FieldControl;
 import com.schoolmanagement.utils.Messages;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,7 +37,16 @@ public class AdminService {
     public ResponseMessage save(AdminRequest request) {
 
         // !!! Girilen username - ssn- phoneNumber unique mi kontrolu
-        checkDuplicate(request.getUsername(), request.getSsn(), request.getPhoneNumber());
+        // checkDuplicate(request.getUsername(), request.getSsn(), request.getPhoneNumber());
+        FieldControl.checkDuplicate(adminRepository,
+                deanRepository,
+                studentRepository,
+                teacherRepository,
+                guestUserRepository,
+                viceDeanRepository,
+                request.getUsername(), request.getSsn(), request.getPhoneNumber());
+
+
         // !!! Admin nesnesi builder ile olusturalim
         Admin admin = createAdminForSave(request);
         admin.setBuilt_in(false);

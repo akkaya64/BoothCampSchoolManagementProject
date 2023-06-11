@@ -45,4 +45,10 @@ public interface LessonProgramRepository extends JpaRepository<LessonProgram, Lo
     Set<LessonProgram> getLessonProgramByStudentUsername(String username);
 
 
+    @Query("SELECT l FROM LessonProgram l WHERE l.id IN :lessonIdList")
+    // LessonProgram icin l alliance sini kullaniyoruz
+    // LessonProgram Classindan l alliance si ile LessonProgramlari getir
+    // WHERE l.id IN : lessonsIdList ; lessonProgramin id fieldindaki birazdan asagidaki methotta verecegim id
+    // li bilgileri getir.
+    Set<LessonProgram> getLessonProgramByLessonIdList(Set<Long> lessonsIdList);
 }
