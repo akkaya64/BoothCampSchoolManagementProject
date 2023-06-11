@@ -32,19 +32,26 @@ public class AdminService {
 
     private final UserRoleService userRoleService;
     private final PasswordEncoder passwordEncoder;
+    private final FieldControl fieldControl;
 
     // Not: save()  *******************************************************
     public ResponseMessage save(AdminRequest request) {
 
         // !!! Girilen username - ssn- phoneNumber unique mi kontrolu
         // checkDuplicate(request.getUsername(), request.getSsn(), request.getPhoneNumber());
-        FieldControl.checkDuplicate(adminRepository,
-                deanRepository,
-                studentRepository,
-                teacherRepository,
-                guestUserRepository,
-                viceDeanRepository,
-                request.getUsername(), request.getSsn(), request.getPhoneNumber());
+//        FieldControl.checkDuplicate(adminRepository,
+//                deanRepository,
+//                studentRepository,
+//                teacherRepository,
+//                guestUserRepository,
+//                viceDeanRepository,
+//                request.getUsername(), request.getSsn(), request.getPhoneNumber());
+
+        // FieldControl Clasinda repository classlari methot seviyede degil de Class seviyede yazildigi icin duplicate
+        // methodunu yukarida comment e alinan duplicate methodu gibi degil asagidaki gibi yazacagiz ama once
+        // FieldControl Classini class seviyede DI siyon yapmaliyiz
+
+        fieldControl.checkDuplicate(request.getUsername(), request.getSsn(), request.getPhoneNumber());
 
 
         // !!! Admin nesnesi builder ile olusturalim
@@ -68,31 +75,33 @@ public class AdminService {
 
     }
 
-    public void checkDuplicate(String username, String ssn, String phone){
-        if(adminRepository.existsByUsername(username) ||
-                deanRepository.existsByUsername(username) ||
-                studentRepository.existsByUsername(username) ||
-                teacherRepository.existsByUsername(username) ||
-                viceDeanRepository.existsByUsername(username) ||
-                guestUserRepository.existsByUsername(username)) {
-            throw new ConflictException(String.format(Messages.ALREADY_REGISTER_MESSAGE_USERNAME, username));
-        } else if (adminRepository.existsBySsn(ssn) ||
-                deanRepository.existsBySsn(ssn) ||
-                studentRepository.existsBySsn(ssn) ||
-                teacherRepository.existsBySsn(ssn) ||
-                viceDeanRepository.existsBySsn(ssn) ||
-                guestUserRepository.existsBySsn(ssn)) {
-            throw new ConflictException(String.format(Messages.ALREADY_REGISTER_MESSAGE_SSN, ssn));
-        } else if (adminRepository.existsByPhoneNumber(phone) ||
-                deanRepository.existsByPhoneNumber(phone) ||
-                studentRepository.existsByPhoneNumber(phone) ||
-                teacherRepository.existsByPhoneNumber(phone) ||
-                viceDeanRepository.existsByPhoneNumber(phone) ||
-                guestUserRepository.existsByPhoneNumber(phone)) {
-            throw new ConflictException(String.format(Messages.ALREADY_REGISTER_MESSAGE_PHONE_NUMBER, phone));
-        }
+    // Artik checkDuplicate yapan asagidaki method kullanim disi isterseniz silebilirsiniz isterseniz hatira olarak
+    // kalsin diye commente alabilirsiniz
+//    public void checkDuplicate(String username, String ssn, String phone){
+//        if(adminRepository.existsByUsername(username) ||
+//                deanRepository.existsByUsername(username) ||
+//                studentRepository.existsByUsername(username) ||
+//                teacherRepository.existsByUsername(username) ||
+//                viceDeanRepository.existsByUsername(username) ||
+//                guestUserRepository.existsByUsername(username)) {
+//            throw new ConflictException(String.format(Messages.ALREADY_REGISTER_MESSAGE_USERNAME, username));
+//        } else if (adminRepository.existsBySsn(ssn) ||
+//                deanRepository.existsBySsn(ssn) ||
+//                studentRepository.existsBySsn(ssn) ||
+//                teacherRepository.existsBySsn(ssn) ||
+//                viceDeanRepository.existsBySsn(ssn) ||
+//                guestUserRepository.existsBySsn(ssn)) {
+//            throw new ConflictException(String.format(Messages.ALREADY_REGISTER_MESSAGE_SSN, ssn));
+//        } else if (adminRepository.existsByPhoneNumber(phone) ||
+//                deanRepository.existsByPhoneNumber(phone) ||
+//                studentRepository.existsByPhoneNumber(phone) ||
+//                teacherRepository.existsByPhoneNumber(phone) ||
+//                viceDeanRepository.existsByPhoneNumber(phone) ||
+//                guestUserRepository.existsByPhoneNumber(phone)) {
+//            throw new ConflictException(String.format(Messages.ALREADY_REGISTER_MESSAGE_PHONE_NUMBER, phone));
+//        }
 
-    }
+//    }
 
     /*
      ODEV -- yukardaki duplicate methodunu 4 parametreli hale getirmek istersem ???
