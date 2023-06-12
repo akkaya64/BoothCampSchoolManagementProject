@@ -1,6 +1,7 @@
 package com.schoolmanagement.config;
 
 import com.schoolmanagement.payload.dto.LessonProgramDto;
+import com.schoolmanagement.payload.dto.TeacherRequestDto;
 import com.schoolmanagement.payload.dto.ViceDeanDto;
 import org.springframework.context.annotation.Configuration;
 
@@ -24,5 +25,10 @@ public class CreateObjectBean {
     @Bean
     public LessonProgramDto lessonProgramDto(){return new LessonProgramDto();}
     // DTO classinin configuration islemlerini yapip Bean ile annote edilmis halde methodu geri dondurecek
+
+    @Bean
+    public TeacherRequestDto teacherRequestDto() {
+        return new TeacherRequestDto();
+    }
 
 }
