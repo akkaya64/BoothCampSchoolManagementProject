@@ -14,11 +14,16 @@ import com.schoolmanagement.utils.CheckParameterUpdateMethod;
 import com.schoolmanagement.utils.FieldControl;
 import com.schoolmanagement.utils.Messages;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -171,7 +176,8 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
             // ediyoruz bu objemiz zaten unique kontrolu yapilarak olusturuldu. Ama bu objenin update edilebilen unique
             // olmasi gereken degerleri var bu degerlerin degistirilmis olmasi ihtimali icin bu degerler degistirildi
             // ise unique lik kontrolu yapmamiz lazim. iste burada bu degerlerin degistirilip degistirilmedigini kontrol
-            // etmemiz lazim. eger degistirilmedi ise unique kontrolu yapmamiza gerek yok
+            // etmemiz lazim. eger degistirilmedi ise unique kontrolu yapmamiza gerek yok. bunun icin update methodunun
+            // disinda bir email in de duplacateligini kontrol eden bir method yazarak handle ettik.
             fieldControl.checkDuplicate(newTeacher.getUsername(),//
                     newTeacher.getSsn(),
                     newTeacher.getPhoneNumber(),
@@ -182,7 +188,39 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
         // Classini return edecek createUpdatedTeacher() methodunu yaziyoruz.
 
 
+        Teacher updatedTeacher =  createUpdatedTeacher(newTeacher, userId); // artik pojo olan update edilmis Object
+        // imizi updatedTeacher veriable nin icine atiyoruz.
 
+        // !!! password encode ediliyor
+        updatedTeacher.setPassword(passwordEncoder.encode(newTeacher.getPassword()));// passwordEncoder classina gidip
+        // encode() methodun parametresine request den gelen passwordu verip ister degistirilmis ister degistirilmemis
+        // olsun encode ettikten sonra  updatedTeacher degiskenine setliyoruz.
+
+        // Set password daki setleme mantigi ile ayni sebebden dolayi Lessonlarin update yapilmis olma ihtimali nedeni
+        // ile ister degistirilmis ister degistirilmemis olsun requestten gelen lessons lari !!! Lesson program
+        // setliyoruz. zaten yukarida Lessons lari getirmistik birdaha getLessonsIdList() methodu ile idye gore
+        // lessonslari getirme islemini yapmaya gerek yok zaten yapilmisi var kullan gec.
+        updatedTeacher.setLessonsProgramList(lessons); // TODO buraya bakilacak
+
+
+        Teacher savedTeacher = teacherRepository.save(updatedTeacher);//Artik updatedTeacher i DB ye gonderebiliriz.
+        // TODO AdvisorTeacher eklenince yazilacak
+
+        return ResponseMessage.<TeacherResponse>builder()
+                .object(createTeacherResponse(savedTeacher)) // updatedTeacher da yazilabilir
+                .message("Teacher updated Successfully")
+                .httpStatus(HttpStatus.OK)
+                .build();
+
+
+
+
+    }
+    private boolean checkParameterForUpdateMethod(Teacher teacher, TeacherRequest newTeacherRequest) {
+        return teacher.getSsn().equalsIgnoreCase(newTeacherRequest.getSsn())
+                || teacher.getUsername().equalsIgnoreCase(newTeacherRequest.getUsername())
+                || teacher.getPhoneNumber().equalsIgnoreCase(newTeacherRequest.getPhoneNumber())
+                || teacher.getEmail().equalsIgnoreCase(newTeacherRequest.getEmail());
     }
     private Teacher createUpdatedTeacher(TeacherRequest teacher, Long id){// updateTeacher method una parametre olarak
         // verdigimiz DB den gelen userId yi burada parametre olarak veriyoruz (cunku var olan bir kullaniciyi
@@ -203,6 +241,100 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
                 .gender(teacher.getGender())
                 .email(teacher.getEmail())
                 .build();
+    }
+
+    // Not: getTeacherByName() **************************************************
+    public List<TeacherResponse> getTeacherByName(String teacherName) {
+
+        // DB den gelecek Pojo datalari DTO ya cevirmeliyiz
+        // burada keyword lari kullanarak bir get methodu turetmeliyiz. Keywordlar kullandigimiz icin Repositoryde
+        // create edilen methodun icine baska herhangi bir code yazmamaiza gerek yok.
+        // eger teacherRepository
+        // requestten gelen (teacherName) teacher name i
+        // iceriyorsa Containing
+        // onu getTeacherByName() methodu ile getir. gelen bu deger bir pojo yapi olacagi icin stream() akisina al
+        // bu akistan gelen verileri map ile DTO verisine create et....
+        return teacherRepository.getTeacherByNameContaining(teacherName)
+                // Containing String manipulation methodlarindan bir tanesi
+                .stream()
+                .map(this::createTeacherResponse)
+                .collect(Collectors.toList());
+    }
+
+    // Not: deleteTeacher() *****************************************************
+    public ResponseMessage<?> deleteTeacher(Long id) {
+
+        teacherRepository.findById(id).orElseThrow(()->{
+            throw new ResourceNotFoundException(Messages.NOT_FOUND_USER_MESSAGE);
+        });
+
+        // lessonProgram tablosunda teacher kaldirilacak ?
+        teacherRepository.deleteById(id); //SpringFrameWork un hazir CRUD operasyonlarindan deleteById(id) methoduna
+        // Repository den gelen id yi veriyoruz ve silme islemini tamliyoruz.
+
+        // lessonProgram tablosunda teacher kaldirilacak ?
+
+        return ResponseMessage.builder()// artik silindigi icin kullaniciya bir obje dondurulmeyecek
+                .message("Teacher is Deleted")
+                .httpStatus(HttpStatus.OK)
+                .build();
+    }
+
+    // Not: getTeacherById() ****************************************************
+    public ResponseMessage<TeacherResponse> getSavedTeacherById(Long id) {
+
+        //Eger DB de bir obje varsa Pojo olarak getirecek v teacher variable in icine koyacak yoksa exception firlatacak
+        Teacher teacher = teacherRepository.findById(id)// Springframework kendi kendine security bir yapi oldugu icin
+                // Spring in  findById() methodu paramatre olarak default da Long data type inda bir id aliyor ve
+                // Optional bir yapi da bir Teacher donduruyor. Yani bizi nullPoinException dan kurtaran bir class...
+                // eger bu field bos biir sekilde gelirse nullPointException alinacak demis oluyoruz.
+                .orElseThrow((()-> new ResourceNotFoundException(Messages.NOT_FOUND_USER_MESSAGE)));
+
+        return ResponseMessage.<TeacherResponse>builder()
+                .object(createTeacherResponse(teacher))
+                .message("Teacher Successfully found")
+                .httpStatus(HttpStatus.OK)
+                .build();
+
+    }
+
+    // Not: getAllWithPage() ****************************************************
+    public Page<TeacherResponse> search(int page, int size, String sort, String type) {
+
+        Pageable pageable = PageRequest.of(page,size, Sort.by(sort).ascending());
+        if(Objects.equals(type, "desc")){
+            pageable = PageRequest.of(page,size, Sort.by(sort).descending());
+        }
+
+        return teacherRepository.findAll(pageable).map(this::createTeacherResponse);
+    }
+
+    // Not: addLessonProgramToTeachersLessonsProgram() **********************************
+    public ResponseMessage<TeacherResponse> chooseLesson(ChooseLessonTeacherRequest chooseLessonRequest) {
+
+        //!!! ya teacher yoksa
+        Teacher teacher = teacherRepository.findById(chooseLessonRequest.getTeacherId()).orElseThrow(
+                ()-> new ResourceNotFoundException(Messages.NOT_FOUND_USER_MESSAGE));
+        //!!! LessonProgram getiriliyor
+        Set<LessonProgram> lessonPrograms = lessonProgramService.getLessonProgramById(chooseLessonRequest.getLessonProgramId());
+
+        // !!!  LessonProgram ici bos mu kontrolu
+        if(lessonPrograms.size()==0) {
+            throw new ResourceNotFoundException(Messages.LESSON_PROGRAM_NOT_FOUND_MESSAGE);
+        }
+        // !!! Teacher in mevcut ders programi getiriliyor
+        Set<LessonProgram> existLessonProgram =teacher.getLessonsProgramList();
+        CheckSameLessonProgram.checkLessonPrograms(existLessonProgram,lessonPrograms);
+        existLessonProgram.addAll(lessonPrograms);
+        teacher.setLessonsProgramList(existLessonProgram);
+        Teacher savedTeacher = teacherRepository.save(teacher);
+
+        return ResponseMessage.<TeacherResponse>builder()
+                .message("LessonProgram added to Teacher")
+                .httpStatus(HttpStatus.CREATED)
+                .object(createTeacherResponse(savedTeacher))
+                .build();
+
     }
 
 }
