@@ -4,11 +4,13 @@ import com.schoolmanagement.entity.concretes.LessonProgram;
 import com.schoolmanagement.entity.concretes.Teacher;
 import com.schoolmanagement.entity.enums.RoleType;
 import com.schoolmanagement.exception.BadRequestException;
+import com.schoolmanagement.exception.ResourceNotFoundException;
 import com.schoolmanagement.payload.dto.TeacherRequestDto;
 import com.schoolmanagement.payload.request.TeacherRequest;
 import com.schoolmanagement.payload.response.ResponseMessage;
 import com.schoolmanagement.payload.response.abstracts.TeacherResponse;
 import com.schoolmanagement.repository.TeacherRepository;
+import com.schoolmanagement.utils.CheckParameterUpdateMethod;
 import com.schoolmanagement.utils.FieldControl;
 import com.schoolmanagement.utils.Messages;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +18,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +33,7 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
     private final PasswordEncoder passwordEncoder;
     private final TeacherRequestDto teacherRequestDto;
     private final UserRoleService userRoleService;
-   // private final AdvisorTeacherService advisorTeacherService;
+    // private final AdvisorTeacherService advisorTeacherService;
 
 
     public ResponseMessage<TeacherResponse> save(TeacherRequest teacherRequest) {
@@ -46,10 +51,10 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
         // atatigimiz Set yapidaki LessonProgram objesi bos mu degilmi kontrolu yapilacak. Eger bos sa bir exception
         // firlatilmasi gerekecek.
 
-        if (lessons.size() == 0){// Set yapidaki listenin size eger 0 ise yani bos gelmisse if in icine girecek.
+        if (lessons.size() == 0) {// Set yapidaki listenin size eger 0 ise yani bos gelmisse if in icine girecek.
             // utils packasine gidip Message Classinin icinde once firlatacagimiz mesagenin icerigini uretiyoruz.
-            throw  new BadRequestException(Messages.LESSON_PROGRAM_NOT_FOUND_MESSAGE);
-        }else {// eger gelen set yapisindaki list dolu ise Duplacate kontrolu yapilacak
+            throw new BadRequestException(Messages.LESSON_PROGRAM_NOT_FOUND_MESSAGE);
+        } else {// eger gelen set yapisindaki list dolu ise Duplacate kontrolu yapilacak
 
             // FieldController Classinda repository interfacelerini method parametresinde vermis olsaydik bu class da
             // Fieldlarin duplacateligini kontrol ettigimiz tum repository interfacelerini bu class a DI sion yapacaktik
@@ -64,7 +69,7 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
                     teacherRequest.getSsn(),
                     teacherRequest.getPhoneNumber(),
                     teacherRequest.getEmail()
-                    );
+            );
 
 
             // Kayit islemini yaparken TeacherRequest den gelen fieldlara ek olarak burada lessonProgram ida Teacher a
@@ -95,7 +100,8 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
                     .build();
         }
 
-        }
+    }
+
     private Teacher teacherRequestToDto(TeacherRequest teacherRequest) {
         // Burada DTO --> Pojo donusumunu Object Bean ile yapacagiz... buAma once payload packagenin icinde DTO packagesinin icine
         // TeacherRequestToDto adinda bir class olusturuyoruz ki once Kullnicinin girdigi datalari Json formatinda
@@ -109,7 +115,7 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
         // Pojo su olarak return edecek
     }
 
-        private TeacherResponse createTeacherResponse(Teacher teacher){
+    private TeacherResponse createTeacherResponse(Teacher teacher) {
         return TeacherResponse.builder()
                 .userId(teacher.getId())
                 .username(teacher.getUsername())
@@ -123,4 +129,97 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
                 .email(teacher.getEmail())
                 .build();
     }
+
+    // Not: getAll() **********************************************************
+    public List<TeacherResponse> getAllTeacher() {
+        //Hazir CRUD operasyonunu kullanacagiz. DB den veri getiriyorsak .findAll() methodunu kullandigimiz
+        // anda veriler pojo olarak gelcek. Bu Pojo verileri Lambda ile .stream() akisina alacagiz ve bu akisi map ile
+        // createTeacherResponse methodunu kullanarak DTO ya cevirecegiz. gelen veri hala artik DTO olarak bir
+        // .stream() akisinda. Java Utils kutuphanesinde bulunan collect abstrack klasinin child i olan Collector
+        // clasindaki .toList() methodunu kullanarak List yapiya ceviriyoruz
+        return teacherRepository.findAll()
+                .stream()
+                .map(this::createTeacherResponse)
+                .collect(Collectors.toList());
+    }
+
+    // Not: updateTeacherById() ************************************************
+    public ResponseMessage<TeacherResponse> updateTeacher(TeacherRequest newTeacher, Long userId) {
+        // Ek Bilgi; DB den Optional data type inde gelen objenin icindeki fieldlari almak icin get ile
+        // cagirmamiz gerekiyor Optional olmayanalarda o getlerin kalkmasi lazim ona dikkat etmek lazim
+
+        //!!! id uzerinden DB deki teacher nesnesi getiriliyor
+        Optional<Teacher> teacher = teacherRepository.findById(userId); // Optional olarak varsa aldik
+
+        // DTO uzerinden eklenecek lessonlar getiriliyor
+        // TeacherRequest de BaseUserRequest den fazla olarak icinde Lessonlari barindiran Set yapida bir Lesson lara
+        // ait idList var. Teacher e Lesson atamasi yapmak yada sahip oldugu Lessonlari guncellemek icin bu idList lere
+        // ait Lessonlari buraya getirip kullanacagiz ama bunun icin LessonProgramService gidip bu Set List yapisindaki
+        // id lere ait Lessonlari Set List yapisinda getirecek methodu a parametre olarak  newTeacher request inin
+        // .getLessonsIdList()  methodu ile gelen Set List yapisindaki lesson lari verip parametreden gelen bu objeyi
+        // Set<LessonProgram> lessons yapisina atamamiz lazim.
+        Set<LessonProgram> lessons = lessonProgramService.getAllLessonProgramById(newTeacher.getLessonsIdList());
+
+        // Kontroller icin orElseThrow yapisi ile calismadigimiz icin burada kontrolleri if yapilari ile
+        // kendimiz handle ediyoruz
+        if(!teacher.isPresent()){ // Teacher Objesinin bos gelip gelmedigini kontrol edip bossa exception firlatiyoruz.
+            throw new ResourceNotFoundException(Messages.NOT_FOUND_USER_MESSAGE);//Message Clasindan getiriyoruz
+        } else if(lessons.size()==0){// Teacher Objesi dolu geldiyse Lesson larin gelip gelmedigini kontrol ediyoruz
+            // Lessonlar gelmediyse yani List in size == 0 ise exception firlatiyoruz.
+            throw new BadRequestException(Messages.LESSON_PROGRAM_NOT_FOUND_MESSAGE);//Message Clasindan getiriyoruz
+        } else if (!checkParameterForUpdateMethod(teacher.get(), newTeacher)) { // Var olan bir Teacher Objesini update
+            // ediyoruz bu objemiz zaten unique kontrolu yapilarak olusturuldu. Ama bu objenin update edilebilen unique
+            // olmasi gereken degerleri var bu degerlerin degistirilmis olmasi ihtimali icin bu degerler degistirildi
+            // ise unique lik kontrolu yapmamiz lazim. iste burada bu degerlerin degistirilip degistirilmedigini kontrol
+            // etmemiz lazim. eger degistirilmedi ise unique kontrolu yapmamiza gerek yok
+            fieldControl.checkDuplicate(newTeacher.getUsername(),//
+                    newTeacher.getSsn(),
+                    newTeacher.getPhoneNumber(),
+                    newTeacher.getEmail());
+        }
+        // kayit islemini tamamlayabilmemiz icin elimizdeki DTO Set yapidaki List imizi Pojo Class a cevirmemiz lazim
+        // bunun icin updateTeacher scope sinin hemen disinda bunu yapan yardimci bir method yaziyoruz. Teacher Pojo
+        // Classini return edecek createUpdatedTeacher() methodunu yaziyoruz.
+
+
+
+    }
+    private Teacher createUpdatedTeacher(TeacherRequest teacher, Long id){// updateTeacher method una parametre olarak
+        // verdigimiz DB den gelen userId yi burada parametre olarak veriyoruz (cunku var olan bir kullaniciyi
+        // update edecegiz) ki bu user id sine ait  kullanicidan gelen bilgileri Pojo  ya cevirebilelim.
+
+        return Teacher.builder()
+                // yeni bir id degil zaten var olan id yi veriyoruz ki id ayni kalsin id PathVariable dan geliyor.
+                .id(id)
+                .username(teacher.getUsername())
+                .name(teacher.getName())
+                .surname(teacher.getSurname())
+                .ssn(teacher.getSsn())
+                .birthDay(teacher.getBirthDay())
+                .birthPlace(teacher.getBirthPlace())
+                .phoneNumber(teacher.getPhoneNumber())
+                .isAdvisor(teacher.isAdvisorTeacher())
+                .userRole(userRoleService.getUserRole(RoleType.TEACHER))
+                .gender(teacher.getGender())
+                .email(teacher.getEmail())
+                .build();
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
