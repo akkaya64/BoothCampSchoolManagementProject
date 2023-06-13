@@ -53,6 +53,59 @@ public class TeacherController {
         // gerekli kontrolleri ve updatetion islemini yap ve dondur
     }
 
+    // Not: getTeacherByName() **************************************************
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @GetMapping("/getTeacherByName")
+    //teacherName 'i @PathVariable, @RequestParam, @RequestBody, @RequestAttribute yada Json dosyadan(Request Objesi) da
+    // alabiliriz Burada  @RequestParam ile getirelim name keywordunu kullanarak endPoint den (name = "name")"name"
+    // adinda bir yapi gelecek bunu String teacherName den gelecek veri ile set le diyoruz. Bu tarz birden fazla deger
+    // donmeyecekse simple olarak @PathVariable ilede alabiliriz
+    public List<TeacherResponse> getTeacherByName(@RequestParam(name = "name") String teacherName){
+        return teacherService.getTeacherByName(teacherName);
+
+    }
+
+    // Not: deleteTeacher() *****************************************************
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @DeleteMapping("/delete/{id}")
+    // gelen deger generic bir yapida gelecek ama birsey dondurulmeyecek bu nedenle diamond icine birsey yazmiyoruz
+    // <?> yaziyoruz.
+    public ResponseMessage<?> deleteTeacher(@PathVariable Long id) {
+        return  teacherService.deleteTeacher(id);
+    }
+
+    // Not: getTeacherById() ****************************************************
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @GetMapping("/getSavedTeacherById/{id}")
+    public ResponseMessage<TeacherResponse> getSavedTeacherById(@PathVariable Long id){
+        return teacherService.getSavedTeacherById(id);
+    }
+
+
+
+    // Not: getAllWithPage() ****************************************************
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @GetMapping("/search")
+    public Page<TeacherResponse> search(
+            @RequestParam(value = "page") int page,
+            @RequestParam(value = "size") int size,
+            @RequestParam(value = "sort") String sort,
+            @RequestParam(value = "type") String type
+    ){
+        return teacherService.search(page, size,sort,type);
+    }
+
+
+    // Not: addLessonProgramToTeachersLessonsProgram() **********************************
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @PostMapping("/chooseLesson")
+    public ResponseMessage<TeacherResponse> chooseLesson(@RequestBody @Valid ChooseLessonTeacherRequest chooseLessonRequest){
+        return teacherService.chooseLesson(chooseLessonRequest);
+    }
+
+
+
+
 
 
 }
