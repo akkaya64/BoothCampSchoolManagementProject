@@ -102,7 +102,7 @@ public class LessonProgramController {
     }
 
     // Not :  getLessonProgramByStudent() ******************************************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER','STUDENT','TEACHER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER', 'TEACHER')")
     @GetMapping("/getAllLessonProgramByStudent") //http://localhost:8080/lessonPrograms/getAllLessonProgramByStudent
     public Set<LessonProgramResponse> getAllLessonProgramByStudent(HttpServletRequest httpServletRequest) {
         // HttpServletRequest Classini almamizin sebebi Requestteki unique bir deger olan username ulasmak.

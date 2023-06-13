@@ -27,8 +27,9 @@ public class TeacherRequest extends BaseUserRequest {
     // setleyebilecek.
 
     @NotNull(message = "Please select isAdvisor Teacher")
-    private Boolean isAdvisorTeacher;
-    // Bu Teacher rehber ogretmen mi belirleniyor.
+    private boolean isAdvisorTeacher;// is keyword u ile baslayan yapilarda Lombok dan kaynakli olarak @Getter
+    // anotationu duzgun calismiyor bu nedenle Boolean olarak yazdimiz data type i boolean olarak duzeltmemiz lazim
+    // Bu Teacher rehber ogretmen mi degil mi bunu sorguluyoruz.
 
     @NotNull(message = "Please enter your email")
     @Email(message = "Please enter valid email")
