@@ -7,12 +7,14 @@ package com.schoolmanagement.service;
 import com.schoolmanagement.entity.concretes.EducationTerm;
 import com.schoolmanagement.entity.concretes.Lesson;
 import com.schoolmanagement.entity.concretes.LessonProgram;
+import com.schoolmanagement.entity.concretes.Teacher;
 import com.schoolmanagement.exception.BadRequestException;
 import com.schoolmanagement.exception.ResourceNotFoundException;
 import com.schoolmanagement.payload.dto.LessonProgramDto;
 import com.schoolmanagement.payload.request.LessonProgramRequest;
 import com.schoolmanagement.payload.response.LessonProgramResponse;
 import com.schoolmanagement.payload.response.ResponseMessage;
+import com.schoolmanagement.payload.response.TeacherResponse;
 import com.schoolmanagement.repository.LessonProgramRepository;
 import com.schoolmanagement.utils.Messages;
 import com.schoolmanagement.utils.TimeControl;
@@ -137,9 +139,34 @@ public class LessonProgramService {
                 .stopTime(lessonProgram.getStopTime())
                 .lessonProgramId(lessonProgram.getId())
                 .lessonName(lessonProgram.getLesson())
-                //TODO Teacher ve Student yazilinca buraya ekleme yapilacak
+                .teachers(lessonProgram.getTeachers()
+                        //bu yapi bize pojo dondurdu bunu DTO ya cevirmemiz lazim
+                        .stream()
+                        .map(this::createTeacherResponse)
+                        //.stream dan gelen aksi assagida Pojo DTO donusumunu yapmasi icin olusturdugumuz yardimci
+                        // methodu kullanarak map in icinde DTO ya donusturuyoruz
+                        .collect(Collectors.toSet()))// codelar hala stream akisinin icinde bu kodelar Set list
+                // yapisina ceviriyoruz
+                //TODO Student yazilinca buraya ekleme yapilacak
                 .build();
     }
+
+    public TeacherResponse createTeacherResponse(Teacher teacher){// yukarida ihtiyac duyulan pojo-->DTO donusumu
+        // yapan yardimci method
+        return TeacherResponse.builder()
+                .userId(teacher.getId())
+                .name(teacher.getName())
+                .surname(teacher.getSurname())
+                .birthDay(teacher.getBirthDay())
+                .birthPlace(teacher.getBirthPlace())
+                .ssn(teacher.getSsn())
+                .phoneNumber(teacher.getPhoneNumber())
+                .gender(teacher.getGender())
+                .email(teacher.getEmail())
+                .username(teacher.getUsername())
+                .build();
+    }
+
 
     // Not :  getById() ************************************************************************
     public LessonProgramResponse getByLessonProgramId(Long id) {
@@ -238,7 +265,12 @@ public class LessonProgramService {
                 .stopTime(lessonProgram.getStopTime())
                 .lessonProgramId(lessonProgram.getId())
                 .lessonName(lessonProgram.getLesson())
-                // TODO Teacher yazilinca eklenecek
+                .teachers(lessonProgram.getTeachers()
+                        .stream()
+                        .map(this::createTeacherResponse)
+                        // Yukarida getAll methodu icin kullandigimiz pojo->DTO donusumunu yapan yardimci methodu
+                        // map in cinde kullandik
+                        .collect(Collectors.toSet()))
                 .build();
 
     }

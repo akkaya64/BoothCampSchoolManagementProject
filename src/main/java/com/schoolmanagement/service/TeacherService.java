@@ -6,11 +6,11 @@ import com.schoolmanagement.entity.enums.RoleType;
 import com.schoolmanagement.exception.BadRequestException;
 import com.schoolmanagement.exception.ResourceNotFoundException;
 import com.schoolmanagement.payload.dto.TeacherRequestDto;
+import com.schoolmanagement.payload.request.ChooseLessonTeacherRequest;
 import com.schoolmanagement.payload.request.TeacherRequest;
 import com.schoolmanagement.payload.response.ResponseMessage;
-import com.schoolmanagement.payload.response.abstracts.TeacherResponse;
+import com.schoolmanagement.payload.response.TeacherResponse;
 import com.schoolmanagement.repository.TeacherRepository;
-import com.schoolmanagement.utils.CheckParameterUpdateMethod;
 import com.schoolmanagement.utils.FieldControl;
 import com.schoolmanagement.utils.Messages;
 import lombok.RequiredArgsConstructor;
@@ -154,7 +154,9 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
         // cagirmamiz gerekiyor Optional olmayanalarda o getlerin kalkmasi lazim ona dikkat etmek lazim
 
         //!!! id uzerinden DB deki teacher nesnesi getiriliyor
-        Optional<Teacher> teacher = teacherRepository.findById(userId); // Optional olarak varsa aldik
+        Optional<Teacher> teacher = teacherRepository.findById(userId); // Optional olarak varsa aldik.bir yapi
+        // Optional olarak bir obje donuyorsa bu yapinin bos gelme ihtimali var, bu nedenle bos gelip gelmnediginin
+        // kontrolu yapilmali
 
         // DTO uzerinden eklenecek lessonlar getiriliyor
         // TeacherRequest de BaseUserRequest den fazla olarak icinde Lessonlari barindiran Set yapida bir Lesson lara
@@ -306,28 +308,51 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
             pageable = PageRequest.of(page,size, Sort.by(sort).descending());
         }
 
-        return teacherRepository.findAll(pageable).map(this::createTeacherResponse);
+        return teacherRepository.findAll(pageable).map(this::createTeacherResponse);//DB den gelen datalar DTO ya
+        // cevirdik
     }
 
     // Not: addLessonProgramToTeachersLessonsProgram() **********************************
     public ResponseMessage<TeacherResponse> chooseLesson(ChooseLessonTeacherRequest chooseLessonRequest) {
 
         //!!! ya teacher yoksa
-        Teacher teacher = teacherRepository.findById(chooseLessonRequest.getTeacherId()).orElseThrow(
+        Teacher teacher = teacherRepository.findById(chooseLessonRequest.getTeacherId()).orElseThrow(//Gelen teacherId
+                // Optional yapida oldugu icin ya yoksayi hemen handle etmemiz lazim. Yoksa exception firlatacagiz
                 ()-> new ResourceNotFoundException(Messages.NOT_FOUND_USER_MESSAGE));
-        //!!! LessonProgram getiriliyor
-        Set<LessonProgram> lessonPrograms = lessonProgramService.getLessonProgramById(chooseLessonRequest.getLessonProgramId());
+
+        //!!! LessonProgram getiriliyor Requestten gelen id yi kullanarak Db den LessonProgram lari cekip LessonProgram Typenda Set List
+        // Yapisindaki lessonsProgram variablenin icine koyacagiz.
+        Set<LessonProgram> lessonPrograms = lessonProgramService.getAllLessonProgramById(chooseLessonRequest
+                .getLessonProgramId());
 
         // !!!  LessonProgram ici bos mu kontrolu
         if(lessonPrograms.size()==0) {
             throw new ResourceNotFoundException(Messages.LESSON_PROGRAM_NOT_FOUND_MESSAGE);
         }
+
+
+        // yukarida ekleyecegizmiz ders programini olusturduk ama simdi bu LessonProgrami ekleyecegimiz Teacherin da
+        // daha once olusturulmus bir LessonProgrami olabilir. bu yeni olusturulan ders programini eski ders
+        // programinin uzerine keleyecegiz
+
         // !!! Teacher in mevcut ders programi getiriliyor
-        Set<LessonProgram> existLessonProgram =teacher.getLessonsProgramList();
-        CheckSameLessonProgram.checkLessonPrograms(existLessonProgram,lessonPrograms);
-        existLessonProgram.addAll(lessonPrograms);
-        teacher.setLessonsProgramList(existLessonProgram);
-        Teacher savedTeacher = teacherRepository.save(teacher);
+        Set<LessonProgram> existLessonProgram = teacher.getLessonsProgramList();
+        // LessonProgram zaten Set yapida oldugu icin unique yapida bu nedenle olusacak olan DB de var olan ile ayni mi
+        // diye bir daha checkDuplicate gibi bir methoda gerek yok.
+        // Yeni olusturulan LessonProgram DB de varsa bie exception firlayacak bunu handle etmemiz gerekiyor. Bunu
+        // yeni bir class olusturup icine gerekli methodu yazacagiz. Bunu eklenecek olan LessonProgram indaki
+        // Lesson larin baslama ve bitis zmanlari ile Teacher in mevcud LessonProgramin daki Lesson larin
+        // baslama ve bitis zamanlarinin cakisip cakismadigini kontrol edecegiz.
+
+
+        //CheckSameLessonProgram.checkLessonPrograms(existLessonProgram,lessonPrograms);
+        existLessonProgram.addAll(lessonPrograms);// existLessonProgram 'a utils kutuphanesinde bulunan .addAll
+        // methodunu kullanarak requestten gelen lessonPrograms lari getirip setliyoruz.
+        teacher.setLessonsProgramList(existLessonProgram);//teacher pojo classina teacher in .setLessonsProgramList()
+        // methoduna existLessonProgram objesini vererek setliyoeuz
+        Teacher savedTeacher = teacherRepository.save(teacher); //  teacherRepository nin .save() methoduna teacher
+        // pojo sunu vererek DB de kalici hale getiriyoruz. Daha sonra bu teacher objesini kullaniciya geri
+        // dondurebilmek icin Teacher data type indaki savedTeacher variablesine atiyoruz
 
         return ResponseMessage.<TeacherResponse>builder()
                 .message("LessonProgram added to Teacher")

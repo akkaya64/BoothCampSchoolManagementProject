@@ -1,10 +1,8 @@
 package com.schoolmanagement.repository;
 
 import com.schoolmanagement.entity.concretes.Teacher;
-import com.schoolmanagement.payload.response.abstracts.TeacherResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Collection;
 import java.util.List;
 
 public interface TeacherRepository extends JpaRepository<Teacher, Long> {
@@ -18,6 +16,7 @@ public interface TeacherRepository extends JpaRepository<Teacher, Long> {
 
     boolean existsByEmail(String email);
 
+    //@Query("select t from Teacher t where t.name like concat('%', ?1, '%')")
     List<Teacher> getTeacherByNameContaining(String teacherName);
     //  Collection<Object> getTeacherByNameContaining(String teacherName); create edilen methodun orjinal hali ama bize
     //  List yapida Teacher objesi donecegi icin yukardaki degisikligi yapiyoruz
