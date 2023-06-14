@@ -1,10 +1,12 @@
 package com.schoolmanagement.controller;
 
+import com.schoolmanagement.payload.request.ChooseLessonTeacherRequest;
 import com.schoolmanagement.payload.request.TeacherRequest;
 import com.schoolmanagement.payload.response.ResponseMessage;
-import com.schoolmanagement.payload.response.abstracts.TeacherResponse;
+import com.schoolmanagement.payload.response.TeacherResponse;
 import com.schoolmanagement.service.TeacherService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -99,6 +101,10 @@ public class TeacherController {
     // Not: addLessonProgramToTeachersLessonsProgram() **********************************
     @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
     @PostMapping("/chooseLesson")
+    // Teachere a LessonProgram atayabilmemiz icin requestin Body sinde requestten gelen LessonProgram 'a ve
+    // LessonProgramin setlenecegi bir Teacher 'a ait id lerin bulunmasi gerekiyor. Bunlari requestin Bodysinden
+    // alabilmeiz icin bu datalari iclerinde barindiran Request class create ediyoruz. Bu Class 'i nerede olusturuyoruz?
+    // Tabiki!! payload packagesinin icinde bulunan request packagesinin icinde olusturuyoruz
     public ResponseMessage<TeacherResponse> chooseLesson(@RequestBody @Valid ChooseLessonTeacherRequest chooseLessonRequest){
         return teacherService.chooseLesson(chooseLessonRequest);
     }

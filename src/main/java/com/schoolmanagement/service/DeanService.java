@@ -9,6 +9,7 @@ import com.schoolmanagement.payload.response.DeanResponse;
 import com.schoolmanagement.payload.response.ResponseMessage;
 import com.schoolmanagement.repository.DeanRepository;
 import com.schoolmanagement.utils.CheckParameterUpdateMethod;
+import com.schoolmanagement.utils.FieldControl;
 import com.schoolmanagement.utils.Messages;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -33,14 +34,26 @@ public class DeanService {// sales department
     private final DeanDto deanDto;
     private final UserRoleService userRoleService;
     private final PasswordEncoder passwordEncoder;
+    private final FieldControl fieldControl;
 
     // Not: Save() *************************************************
     public ResponseMessage<DeanResponse> save(DeanRequest deanRequest) {
 
         //!!! Dublicate kontrolu
-        adminService.checkDuplicate(deanRequest.getUsername(),
+//        adminService.checkDuplicate(deanRequest.getUsername(),
+//                deanRequest.getSsn(),
+//                deanRequest.getPhoneNumber());
+
+        //yukaridaki comment icine alinan code blogu  eski checkDuplacate methodunu kullaniyordu Daha sonra Class
+        // bazinda bir checkDuplicate methodu olusturuldu. FieldControl adindaki bu Clans Injection edildi simdi
+        // asagida bu injectiondan faydalanip fieldControl clasindan checkDuplicate methodunu cagirip ilgili unique
+        // field lari parametre olarak vereip kontrolun yapilmasini saglayacagiz
+
+        fieldControl.checkDuplicate(
+                deanRequest.getUsername(),
                 deanRequest.getSsn(),
-                deanRequest.getPhoneNumber());
+                deanRequest.getPhoneNumber()
+        );
 
         // !!! DTO -POJO donusumu
         Dean dean = createDtoForDean(deanRequest);
@@ -134,7 +147,13 @@ public class DeanService {// sales department
 
             // karsilatiracagimiz user id sinin orjinali path da verilen id uzerinden db den gelecek digeri
             // BaseUserRequest den DeanRequest ile gelecek.Kullanici update bilgilerini JWT Token ile DeanRequest olusturacak
-            adminService.checkDuplicate(newDean.getUsername(),newDean.getSsn(), newDean.getPhoneNumber());
+            // adminService.checkDuplicate(newDean.getUsername(),newDean.getSsn(), newDean.getPhoneNumber());Heyy!!
+            // artik checkDuplicate yi daha yeni bir yolumuz var asagida onu kullanacagiz
+            fieldControl.checkDuplicate(
+                    newDean.getUsername(),
+                    newDean.getSsn(),
+                    newDean.getPhoneNumber()
+            ); // Guzel degil mi? :)))
             // adminService deki checkDuplicate methoduna newDean den gelen .getUsername(), .getSsn(), .getPhoneNumber()
             // parametrelerini veriyoruz. artik Duplicate yapmis oluyoruz
 

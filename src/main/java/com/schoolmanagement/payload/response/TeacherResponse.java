@@ -1,7 +1,8 @@
-package com.schoolmanagement.payload.response.abstracts;
+package com.schoolmanagement.payload.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.schoolmanagement.entity.concretes.LessonProgram;
+import com.schoolmanagement.payload.response.abstracts.BaseUserResponse;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,7 +15,7 @@ import java.util.Set;
 @NoArgsConstructor
 @SuperBuilder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class TeacherResponse extends BaseUserResponse{
+public class TeacherResponse extends BaseUserResponse {
      private Set<LessonProgram> lessonPrograms;
 
      // Email bilgisini almamiz lazim ve email bilgisi unique bir deger almasi lazim. peki Admin service class icinde

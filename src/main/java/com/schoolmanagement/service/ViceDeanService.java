@@ -9,6 +9,7 @@ import com.schoolmanagement.payload.response.ResponseMessage;
 import com.schoolmanagement.payload.response.ViceDeanResponse;
 import com.schoolmanagement.repository.ViceDeanRepository;
 import com.schoolmanagement.utils.CheckParameterUpdateMethod;
+import com.schoolmanagement.utils.FieldControl;
 import com.schoolmanagement.utils.Messages;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,6 +37,7 @@ public class ViceDeanService {
     private final ViceDeanDto viceDeanDto; // Bu bagimlilik kullanilarak degisim yapan methodu buraya cagirabiliriz.
     private final UserRoleService userRoleService;
     private final PasswordEncoder passwordEncoder;
+    private final FieldControl fieldControl;
 
     // Not :  Save() *************************************************************************
     public ResponseMessage<ViceDeanResponse> save(ViceDeanRequest viceDeanRequest) {
@@ -51,7 +53,10 @@ public class ViceDeanService {
         // phoneNumber 'ini unique olup olmadigini check et.
         // burada bir check edilen parametre olarak verilmis 3 fielden birisinde bile eslesme Duplicate tesbit edilirse
         // code asagiya inmez Controller katmanina gecer ve kullaniciya bir exception firlatir
-        adminService.checkDuplicate(viceDeanRequest.getUsername(), viceDeanRequest.getSsn(), viceDeanRequest.getPhoneNumber());
+//        adminService.checkDuplicate(viceDeanRequest.getUsername(), viceDeanRequest.getSsn(),
+//                viceDeanRequest.getPhoneNumber());//Elveda sana eski checkDuplicate hosgeldin yeni checkDuplicate
+        fieldControl.checkDuplicate(viceDeanRequest.getUsername(), viceDeanRequest.getSsn(),
+               viceDeanRequest.getPhoneNumber());
 
         // parametre olarak verilen degerler unique ise code asagiya iner. Burada artik DB ye kayit islemi yapilacagi
         // icin Json formatinda olan verilerin DTO(Data Transfer Object) dan Pojo ya cevrilmesi gerekir. bunun icin
@@ -169,7 +174,13 @@ public class ViceDeanService {
             // yazmistik(CheckParameterUpdateMethod.checkParameter). CheckParameterUpdateMethod Classinda
             // karsilastirmanin yapilmasi icin DB deki viceDean 'i get() methodu ile getirip parametre olarak veriyoruz
             // ve karsilastima icin requestten gelen yeni newViceDean 'ida parametre olarak veriyoruz
-            adminService.checkDuplicate(newViceDean.getUsername(), newViceDean.getSsn(), newViceDean.getPhoneNumber());
+            // adminService.checkDuplicate(newViceDean.getUsername(), newViceDean.getSsn(), newViceDean.getPhoneNumber());
+            // Elveda yukaridaki checkDuplicate hosgeldin yeni assagidaji checkDuplicate
+            fieldControl.checkDuplicate(
+                    newViceDean.getUsername(),
+                    newViceDean.getSsn(),
+                    newViceDean.getPhoneNumber()
+            );
         }
 
         // Elimizde kullanicidan gelen Unique datala sahip bir newViceDean objesi var bu objenin verilerini Pojo dan

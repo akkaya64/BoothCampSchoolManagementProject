@@ -26,5 +26,8 @@ public class LessonProgramResponse {
     private Set<Lesson> lessonName;// lessonName asinda icinde Set yapida <Lesson> lari tutan bir field Set yapilar
                                    // tek bir objeyi tutar mesela iki tane Math varsa birisini alir.
     private EducationTerm educationTerm;
-    // TODO student ve teacher yazilinca eklemeler yapilacak
+    private Set<TeacherResponse> teachers; // Bir LessonPrograma birden fazla ogretmen verilebilir. Birisi A subesinde
+    // derse girer digeri B subesinde derse girer Ama ayni ogretmene ayni LessonProgrami gondermemeliyiz bu nedenle Set
+    // yapida bir Listin icine koyuyoruz
+    // TODO studentyazilinca eklemeler yapilacak
 }
