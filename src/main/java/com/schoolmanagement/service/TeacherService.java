@@ -11,6 +11,7 @@ import com.schoolmanagement.payload.request.TeacherRequest;
 import com.schoolmanagement.payload.response.ResponseMessage;
 import com.schoolmanagement.payload.response.TeacherResponse;
 import com.schoolmanagement.repository.TeacherRepository;
+import com.schoolmanagement.utils.CheckSameLessonProgram;
 import com.schoolmanagement.utils.FieldControl;
 import com.schoolmanagement.utils.Messages;
 import lombok.RequiredArgsConstructor;
@@ -345,7 +346,7 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
         // baslama ve bitis zamanlarinin cakisip cakismadigini kontrol edecegiz.
 
 
-        //CheckSameLessonProgram.checkLessonPrograms(existLessonProgram,lessonPrograms);
+        CheckSameLessonProgram.checkLessonPrograms(existLessonProgram,lessonPrograms);
         existLessonProgram.addAll(lessonPrograms);// existLessonProgram 'a utils kutuphanesinde bulunan .addAll
         // methodunu kullanarak requestten gelen lessonPrograms lari getirip setliyoruz.
         teacher.setLessonsProgramList(existLessonProgram);//teacher pojo classina teacher in .setLessonsProgramList()
