@@ -39,7 +39,7 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
     private final PasswordEncoder passwordEncoder;
     private final TeacherRequestDto teacherRequestDto;
     private final UserRoleService userRoleService;
-    // private final AdvisorTeacherService advisorTeacherService;
+    private final AdvisorTeacherService advisorTeacherService;
 
 
     public ResponseMessage<TeacherResponse> save(TeacherRequest teacherRequest) {
@@ -98,6 +98,26 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
             teacher.setPassword(passwordEncoder.encode(teacherRequest.getPassword()));
             // !!! Db ye kayit islemi
             Teacher savedTeacher = teacherRepository.save(teacher);
+            // TODO AdvisorTeacher creation isleminden ekleme yazilacak
+            // Burasi kayit in logical islemlerinin yapildigi Teacher save() methodu burada Teacher creation islemi
+            // yapilacak bu islemi yaparken bu Teacher Objesinin AdvisorTeacher olup olmadigini burada belirleyecegiz
+            // isAdvisor a burada bakacagiz. request classindan gelen Teacher Objesinin boolean type da bir
+            // isAdvisorTeacher variable i vardi.
+            // Bu Teacher i create ederken isAdvisorTeacher requestten true gelirse AdvisorTeacherService git burada
+            // saveAdvisorTeacher diye bir method var burada bu Teacher i AdvisorTeacher olarak kaydet demeliyiz.
+
+            // Teacher daki bu degisiklik teacher tablosunda degil AdvisorTeacher tablosunda yapilacak. Bir teacher
+            // objesinin advisor olup olmadigini anlamak icin isAdvisorTeacher field ina bakmamiz yeterli. Eger true
+            // setlenmis ise bu teacherin advisor islemleri icin iliski icinde bulundugu advisor_teacher tablosuna gidecegiz
+            if (teacherRequest.isAdvisorTeacher()){ // teacherRequest e git bunun isAdvisorTeacher() methodu true donerse
+                // if in icine gir. AdvisorTeacherService git. birazdan olusturacagimiz saveAdvisorTeacher methodunu
+                // calistir diyecegiz ama bunun icin once AdvisorTeacherService e gidebilmek icin
+                // AdvisorTeacherService i yukarida bu class a injection yapmaliyiz.
+
+                advisorTeacherService.saveAdvisorTeacher(savedTeacher); // ekleme yapilacak arguman olarak da kayit
+                // islemi yapilmis saverTeacher objesini veriyoruz
+            }
+
 
             return ResponseMessage.<TeacherResponse>builder()
                     .message("Teacher saved successfully")
@@ -208,6 +228,11 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
 
         Teacher savedTeacher = teacherRepository.save(updatedTeacher);//Artik updatedTeacher i DB ye gonderebiliriz.
         // TODO AdvisorTeacher eklenince yazilacak
+        advisorTeacherService.updateAdvisorTeacher(newTeacher.isAdvisorTeacher(), savedTeacher);
+        // advisorTeacherService e git AdvisorTeacherService Classinad create edecek oldugumuz .updateAdvisorTeacher()
+        // update methoduna paremetre olarak requestten gelen newTeacher objesinin isAdvisorTeacher() methodu getir
+        // yani true mu false mi isAdvisorTeacher() boolean degerini ve savedTeacher objesini verecegiz
+
 
         return ResponseMessage.<TeacherResponse>builder()
                 .object(createTeacherResponse(savedTeacher)) // updatedTeacher da yazilabilir
