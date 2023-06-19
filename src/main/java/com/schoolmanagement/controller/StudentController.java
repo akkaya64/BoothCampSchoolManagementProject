@@ -1,5 +1,6 @@
 package com.schoolmanagement.controller;
 
+import com.schoolmanagement.payload.request.StudentRequest;
 import com.schoolmanagement.payload.response.ResponseMessage;
 import com.schoolmanagement.payload.response.StudentResponse;
 import com.schoolmanagement.service.StudentService;
@@ -22,6 +23,8 @@ public class StudentController {
     @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
     @PostMapping("/save")
     public ResponseMessage<StudentResponse> save(@RequestBody @Valid StudentRequest studentRequest) {
+        // endpoint den @RequestBody ile Json formata cevrilmis bir obje gelecek @Valid validation yap ve
+        // StudentRequest data type indeki studentRequest e setle-maple-ata diyoruz
         return studentService.save(studentRequest);
     }
 

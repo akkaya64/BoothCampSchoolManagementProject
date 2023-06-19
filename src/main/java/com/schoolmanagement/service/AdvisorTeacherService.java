@@ -177,4 +177,18 @@ public class AdvisorTeacherService {
         }*/
 
     }
+
+    // Not: StudentService icin gerekli metod ***************************
+    // Student rolu olusturlurken Student e id numarasi kullanarak bir AdvisorTeacher fieldi eklenmesi gerekiyor.
+    // bu nedenle StudentService Classinda save methodunu olusturken buraya gelip id si ile AdvisorTeacher getiren
+    // methodu create edecegiz. Bu method Student objesi olusturulurken studentin advisorTeacher ini student object ine
+    // eklerken calistirilacak.. Studenti create ederken advisor teacher ini de belirlemis olacagiz.
+    public Optional<AdvisorTeacher> getAdvisorTeacherById(Long id) {
+        return advisorTeacherRepository.findById(id);
+    }
+
+    public Optional<AdvisorTeacher> getAdvisorTeacherByUsername(String username) {
+
+        return advisorTeacherRepository.findByTeacher_UsernameEquals(username);
+    }
 }
