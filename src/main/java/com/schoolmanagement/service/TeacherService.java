@@ -158,7 +158,7 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
 
     // Not: getAll() **********************************************************
     public List<TeacherResponse> getAllTeacher() {
-        //Hazir CRUD operasyonunu kullanacagiz. DB den veri getiriyorsak .findAll() methodunu kullandigimiz
+        // Hazir CRUD operasyonunu kullanacagiz. DB den veri getiriyorsak .findAll() methodunu kullandigimiz
         // anda veriler pojo olarak gelcek. Bu Pojo verileri Lambda ile .stream() akisina alacagiz ve bu akisi map ile
         // createTeacherResponse methodunu kullanarak DTO ya cevirecegiz. gelen veri hala artik DTO olarak bir
         // .stream() akisinda. Java Utils kutuphanesinde bulunan collect abstrack klasinin child i olan Collector
