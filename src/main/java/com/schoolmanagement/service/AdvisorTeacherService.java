@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AdvisorTeacherService {
     private final AdvisorTeacherRepository advisorTeacherRepository;
-    //private final AdvisorTeacher advisorTeacher;
     private final UserRoleService userRoleService;
 
     // Not: deleteAdvisorTeacher() ******************************************************
