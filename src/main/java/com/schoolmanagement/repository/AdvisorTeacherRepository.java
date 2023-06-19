@@ -12,4 +12,7 @@ public interface AdvisorTeacherRepository extends JpaRepository<AdvisorTeacher, 
     // islemlerinde donen deger void olarak gelebiliyor bu durumda bu yapi Optional bir yapi dondurecegi icin methodun
     // donen degerini manuel olarak yukaridaki gibi manuel olarak duzeltiyoruz Optional bir yapi oldugu icinde
     // parametre olarak pojo olan AdvisorTeacher i veriyoruz.. teacher id uzerinden advisorTeacher i cektik...
+
+    Optional<AdvisorTeacher> findByTeacher_UsernameEquals(String username);
+
 }
