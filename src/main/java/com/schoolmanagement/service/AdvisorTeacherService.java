@@ -44,7 +44,7 @@ public class AdvisorTeacherService {
         // advisorTeacher variable inide gondererek silebiliriz
        // advisorTeacherRepository.delete(advisorTeacher);
 
-       return ResponseMessage.<AdvisorTeacher>builder()
+       return ResponseMessage.builder()
                .message("Advisor Teacher Deleted Successfully")
                .httpStatus(HttpStatus.OK)
                .build();
