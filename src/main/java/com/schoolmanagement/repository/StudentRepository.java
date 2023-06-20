@@ -1,8 +1,12 @@
 package com.schoolmanagement.repository;
 
 import com.schoolmanagement.entity.concretes.Student;
+import com.schoolmanagement.payload.response.StudentResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+
+import java.util.Collection;
+import java.util.List;
 
 public interface StudentRepository extends JpaRepository<Student, Long> {
     boolean existsByUsername(String username);
@@ -15,7 +19,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
     boolean existsByEmail(String email);
 
-    @Query(value = "SELECT (count(s)>0 FROM Student s)") // Bu Query DB deki Student tablosuna gidecek tablodaki ogrenci
+    @Query(value = "SELECT (count(s)>0) FROM Student s") // Bu Query DB deki Student tablosuna gidecek tablodaki ogrenci
         // sayisinin 0 dan buyuk olup olmadigini yani tabloda ogrenci var mi yok mu kontrol edecek.. tablonun durumuna
         // gore true yada false dondurecek
     boolean findStudent();
@@ -26,4 +30,8 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
         // buyuk studentNumber i getir SELECT diyoruz
     int getMaxStudentNumber();// Bu method olusturuld Hibernate yada Spring Data Jpa bunun nasil calisacagini bilmez
     // bunun nasil calisacagini olusturacagimiz query ile belirleyecegiz
+
+    List<Student> getStudentByNameContaining(String studentName);
+
+
 }

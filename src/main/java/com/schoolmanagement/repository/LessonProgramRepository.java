@@ -50,5 +50,5 @@ public interface LessonProgramRepository extends JpaRepository<LessonProgram, Lo
     // LessonProgram Classindan l alliance si ile LessonProgramlari getir
     // WHERE l.id IN : lessonsIdList ; lessonProgramin id fieldindaki birazdan asagidaki methotta verecegim id
     // li bilgileri getir.
-    Set<LessonProgram> getLessonProgramByLessonIdList(Set<Long> lessonsIdList);
+    Set<LessonProgram> getLessonProgramByLessonProgramIdList(Set<Long> lessonIdList);
 }
