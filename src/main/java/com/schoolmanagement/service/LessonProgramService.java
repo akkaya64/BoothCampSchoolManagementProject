@@ -292,7 +292,7 @@ public class LessonProgramService {
         // .getLessonProgramByLessonIdList() olarak verdigimiz method ile DB den TeacherRequestten gelen Lesson nun id
         // sini kullanarak LessonProgram lari getirecegiz . Bunu lessonProgramRepository Katmaninda
         // .getLessonProgramByLessonIdList() methodunun icinde yapacagimiz Query ile yapacagiz
-        return lessonProgramRepository.getLessonProgramByLessonIdList(lessonsIdList);
+        return lessonProgramRepository.getLessonProgramByLessonProgramIdList(lessonsIdList);
 
     }
 }

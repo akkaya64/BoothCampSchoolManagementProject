@@ -1,21 +1,30 @@
 package com.schoolmanagement.service;
 
 import com.schoolmanagement.entity.concretes.AdvisorTeacher;
+import com.schoolmanagement.entity.concretes.LessonProgram;
 import com.schoolmanagement.entity.concretes.Student;
 import com.schoolmanagement.entity.enums.RoleType;
 import com.schoolmanagement.exception.ResourceNotFoundException;
+import com.schoolmanagement.payload.request.ChooseLessonProgramWithId;
 import com.schoolmanagement.payload.request.StudentRequest;
 import com.schoolmanagement.payload.response.ResponseMessage;
 import com.schoolmanagement.payload.response.StudentResponse;
 import com.schoolmanagement.repository.StudentRepository;
+import com.schoolmanagement.utils.CheckSameLessonProgram;
 import com.schoolmanagement.utils.FieldControl;
 import com.schoolmanagement.utils.Messages;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +35,7 @@ public class StudentService {
     private final FieldControl fieldControl;
     private final UserRoleService userRoleService;
     private final PasswordEncoder passwordEncoder;
+    private final LessonProgramService lessonProgramService;
 
     // Not: Save() **********************************************************
     public ResponseMessage<StudentResponse> save(StudentRequest studentRequest) {
@@ -157,12 +167,11 @@ public class StudentService {
 
     // Not: getAllStudent() *******************************************************
     public List<StudentResponse> getAllStudent() {
-        public List<StudentResponse> getAllStudent () {
             return studentRepository.findAll()
                     .stream()
                     .map(this::createStudentResponse)
                     .collect(Collectors.toList());
-        }
+
     }
 
     // Not: updateStudent() ******************************************************
@@ -223,5 +232,118 @@ public class StudentService {
                 .build();
 
     }
+
+    // Not: deleteStudent() ******************************************************
+    public ResponseMessage<?> deleteStudent(Long studentId) {
+        // !!! id var mi kontrolu
+        Student student = studentRepository.findById(studentId).orElseThrow(()->
+                new ResourceNotFoundException(Messages.NOT_FOUND_USER_MESSAGE));
+
+        studentRepository.deleteById(studentId);
+
+        return ResponseMessage.builder()
+                .message("Student Deleted Successfully ")
+                .httpStatus(HttpStatus.OK)
+                .build();
+    }
+
+
+    // Not: getStudentByName() ***************************************************
+    public List<StudentResponse> getStudentByName(String studentName) {
+        return studentRepository.getStudentByNameContaining(studentName)
+                //TODO bu kismi tekrar dinle ve commetlerini yaz
+                .stream()
+                .map(this::createStudentResponse)
+                .collect(Collectors.toList());
+    }
+
+    // Not: getStudentById() ******************************************************
+    public Student getStudentByIdForResponse(Long id) {//Bu zamana kadar kullaniciya bir response dondurduk ama
+        // bu method baska classlardan cagirilip kullanilacagi icin ve burada kullaniciya bir response objesi
+        // dondurmeyecegimiz icin bu method da objeyi Pojo olarak donduruyoruz. Artik bir pojo dundurdugumuz
+        // icin baska classlardan cagirip logical islemler icin kullanabilecegiz
+        return studentRepository.findById(id).orElseThrow(()->
+                new ResourceNotFoundException(Messages.NOT_FOUND_USER_MESSAGE));
+    }
+
+    // Not: getAllStudentWithPage() ***********************************************
+    public Page<StudentResponse> search(int page, int size, String sort, String type) {
+
+        // Pageable pageable = PageRequest.of(page, size, Sort.by(type,sort));
+
+        // Yukaridaki code blogu assagidaki if li code blogu ile ayni isi yapiyor.
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
+        if (Objects.equals(type, "desc")) {
+            pageable = PageRequest.of(page, size, Sort.by(sort).descending());
+        }
+
+        return studentRepository.findAll(pageable).map(this::createStudentResponse);
+        // studentRepository DB ile iliskili oldugu icin DB den gelen data lar POJO formatinda biz bunu lamda ile
+        // DB den gelen bu datalari(this) createStudentResponse methodunu kullanarak response turune yani
+        // DTO ya cevirecegiz
+    }
+
+    // Not: chooseLessonProgramById() *********************************************
+    public ResponseMessage<StudentResponse> chooseLesson(String username,//chooseLesson methodundan bir Student
+                                                         // username i geliyor ve secilen LessonProgramin id
+                                                         // bilgileri geliyor.
+                                                         ChooseLessonProgramWithId chooseLessonProgramRequest) {
+
+        // !!! Student ve LessonProgram kontrolu
+        // SpringFrameWork un methodlari turetilebilen methodlardi buradan yola cikarak SpringFrameWork findById()
+        // methodunu tureterek StudentRepository de findByUsername() methodu olusturacagiz bu method
+        // studentRepository e gidip requestBody den gelen username DB deki Student tablosunda var mi yok mu kontrol
+        // edecek varsa Student data type indeki student degiskeninin icine setleyecek eger yoksa orElseThrow ile
+        // exception firlatacagiz.
+        Student student = studentRepository.findByUsername(username).orElseThrow(()->
+                new ResourceNotFoundException(Messages.NOT_FOUND_USER_MESSAGE));
+
+        //!!! talep edilen lessonProgram getiriliyor
+        // request den gelen LessonProgram lari icinde LessonProgramlar barindiran sadece benzersiz verileri icine kabul
+        // eden Set yapidaki bir lessonPrograms variable ine setliyoruz-mapliyoruz. bunun icinde lessonProgramService
+        // katinda id den yola cikarak pojo bir lessonProgram donduren method yamismiyiz diye kontrol ediyoruz ki
+        // Allahtan boyle bir method yazmisiz yoksa response bir LessonProgram donduren bir methodu cagirip  oradan
+        // gelen response datalari pojoya ceviren methodu bu classin icinde bir yerde yada LessonProgramService
+        // classinin icinde bir yerde olusturracaktik ama zaten boyle bir method olusturulmus getAllLessonProgramById()
+        // buraya cagirdigimiz .getAllLessonProgramById() methoduna isini yapabilmesi icin parametresine
+        // chooseLessonProgramRequest den .getLessonProgramId() methodu ile gelen id yi veriyoruz.
+        Set<LessonProgram> lessonPrograms = lessonProgramService.getAllLessonProgramById(chooseLessonProgramRequest
+                .getLessonProgramId());
+
+        // lessonPrograms in icine, eger DB de request den gelen id ye ait object varsa setlenmis olacak
+        // bunun kontrolunu if yapisi ile kontrol ediyoruz eger yoksa lessonPrograms sin size 0 olacak
+        // ve bir exception firlatilacak (Set yapilarin bir size i olur)
+        if(lessonPrograms.size()==0){
+            throw  new ResourceNotFoundException(Messages.LESSON_PROGRAM_NOT_FOUND_MESSAGE);
+        }
+
+        // !!! Ogrencinin mevcut lessonProgramini getiriyoruz
+        // Student in halihazirda bir LessonProgrami da olabilir. bunu kontrol etmemiz lazim student tablosuna gidecegiz
+        // buradaki lessonProgram lari getirecegiz. bunun icin de Student entity classindaki  getLessonsProgramList()
+        // methodunu burada cagiriyoruz. gelen degerler entity class indan gelecegi icin POJO yapisinda olacak bu nedenle
+        // gelen degerleri icinde sadece unique LessonProgram Set yapidaki studentLessonProgram variable inin icine koyuyouz
+        Set<LessonProgram> studentLessonProgram = student.getLessonsProgramList();
+
+        //!!! lesson icin dublicate kontrolu
+        // Conflict varmi kontrol etmemiz lazim. Requestten gelen talep edilen LessonProgram ile DB de halihazirda var
+        // olan LessonProgram lar arasinda ayni olanlar varmi kontrol edilecek. Utils package sinin icinde
+        // CheckSameLessonProgram yardimci class i olusturmustuk, bu classinda LessonProgram larin duplicateligini
+        // kontrol eden checkLessonPrograms() methodu vardi onu burda cagiriyoruz ve requestten gelen talep edilen
+        // LessonProgramlar (lessonPrograms) ile DB de bulunan mevcud LessonProgramlari (studentLessonProgram)
+        // parametre olarak veriyoruz.
+        CheckSameLessonProgram.checkLessonPrograms(studentLessonProgram,lessonPrograms);
+
+        studentLessonProgram.addAll(lessonPrograms);
+        student.setLessonsProgramList(studentLessonProgram);
+        Student savedStudent =  studentRepository.save(student);
+
+        return ResponseMessage.<StudentResponse>builder()
+                .message("Lessons added to Student")
+                .object(createStudentResponse(savedStudent))
+                .httpStatus(HttpStatus.CREATED)
+                .build();
+    }
+
 
 }
