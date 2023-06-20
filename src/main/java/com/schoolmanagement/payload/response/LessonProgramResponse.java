@@ -29,5 +29,6 @@ public class LessonProgramResponse {
     private Set<TeacherResponse> teachers; // Bir LessonPrograma birden fazla ogretmen verilebilir. Birisi A subesinde
     // derse girer digeri B subesinde derse girer Ama ayni ogretmene ayni LessonProgrami gondermemeliyiz bu nedenle Set
     // yapida bir Listin icine koyuyoruz
-    // TODO studentyazilinca eklemeler yapilacak
+    // TODO studentyazilinca eklemeler yapilacak -- Student yazildi LessonProgramResponse a students fieldini da ekliyoruz
+    private Set<StudentResponse> students;
 }

@@ -16,6 +16,7 @@ import com.schoolmanagement.payload.response.LessonProgramResponse;
 import com.schoolmanagement.payload.response.ResponseMessage;
 import com.schoolmanagement.payload.response.TeacherResponse;
 import com.schoolmanagement.repository.LessonProgramRepository;
+import com.schoolmanagement.utils.CreateResponseObjectForService;
 import com.schoolmanagement.utils.Messages;
 import com.schoolmanagement.utils.TimeControl;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +51,7 @@ public class LessonProgramService {
     private final EducationTermService educationTermService; //termleri getirrecegiz cunku LessonPrograma term
     // bilgisi de eklemeliyiz.
     private final LessonProgramDto lessonProgramDto;
+    private final CreateResponseObjectForService createResponseObjectForService;
 
 
 
@@ -148,6 +150,11 @@ public class LessonProgramService {
                         .collect(Collectors.toSet()))// codelar hala stream akisinin icinde bu kodelar Set list
                 // yapisina ceviriyoruz
                 //TODO Student yazilinca buraya ekleme yapilacak
+                .students(lessonProgram.getStudents()
+                        .stream()
+                        .map(createResponseObjectForService::createStudentResponse)
+                        .collect(Collectors.toSet())
+                )
                 .build();
     }
 
@@ -237,6 +244,11 @@ public class LessonProgramService {
                 .lessonProgramId(lessonProgram.getId())
                 .lessonName(lessonProgram.getLesson())
                 //TODO Student yazilinca buraya ekleme yapilacak
+                .students(lessonProgram.getStudents()
+                        .stream()
+                        .map(createResponseObjectForService::createStudentResponse)
+                        .collect(Collectors.toSet())
+                )
                 .build();
     }
 
