@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -294,8 +295,8 @@ public class StudentService {
         // SpringFrameWork un methodlari turetilebilen methodlardi buradan yola cikarak SpringFrameWork findById()
         // methodunu tureterek StudentRepository de findByUsername() methodu olusturacagiz bu method
         // studentRepository e gidip requestBody den gelen username DB deki Student tablosunda var mi yok mu kontrol
-        // edecek varsa Student data type indeki student degiskeninin icine setleyecek eger yoksa orElseThrow ile
-        // exception firlatacagiz.
+        // edecek varsa username ile gelen student objesini Student data type indeki student degiskeninin icine
+        // setleyecek eger yoksa orElseThrow ile exception firlatacagiz. Yapiyi null olmaktan kurtardik
         Student student = studentRepository.findByUsername(username).orElseThrow(()->
                 new ResourceNotFoundException(Messages.NOT_FOUND_USER_MESSAGE));
 
@@ -330,20 +331,62 @@ public class StudentService {
         // olan LessonProgram lar arasinda ayni olanlar varmi kontrol edilecek. Utils package sinin icinde
         // CheckSameLessonProgram yardimci class i olusturmustuk, bu classinda LessonProgram larin duplicateligini
         // kontrol eden checkLessonPrograms() methodu vardi onu burda cagiriyoruz ve requestten gelen talep edilen
-        // LessonProgramlar (lessonPrograms) ile DB de bulunan mevcud LessonProgramlari (studentLessonProgram)
-        // parametre olarak veriyoruz.
+        // LessonProgramlar (lessonPrograms) ile DB de bulunan mevcud LessonProgramlari getirip icine koydugumuz
+        // (studentLessonProgram) variable ini parametre olarak veriyoruz. Eger bir eslesme bulursa code yukaridan
+        // asagiya dogru gelen code buradan itibaren devam etmeyecek  ve bu methodu tetikleyen Controller tarafina
+        // bir exception gonderecek.
         CheckSameLessonProgram.checkLessonPrograms(studentLessonProgram,lessonPrograms);
 
+        // Herhangi bir conflict yoksa talep edilen lessonPrograms larin hepsini icinde DB den gelen lessonProgram lari
+        // barindiran studentLessonProgram variable ina Java nin util kutuphanesinde bulunan .addAll() methodu ile
+        // ekliyoruz.
         studentLessonProgram.addAll(lessonPrograms);
-        student.setLessonsProgramList(studentLessonProgram);
-        Student savedStudent =  studentRepository.save(student);
 
+        // artik icinde guncellenmis yada yeni olusmus lessonProgramlari barindiran studentLessonProgram variable ini,
+        // DB den getirilen student leri iceren student variable inin LessonsProgramList fieldinin icine setliyoruz.
+        student.setLessonsProgramList(studentLessonProgram);
+
+
+        // Student savedStudent =  studentRepository.save(student);
+        // Yukaridaki save methodu objenin kendisini donduruyor bu donen objeyi Student POJO su turundeki savedStudent
+        // variable sinin icine koyabiliriz artik elimizde guncellenerek DB ye kayit edilmis bir student objesi ve
+        // icinde DB deki bu guncellenmis objeyi barindiran savedStudent variable var. Kullaniciya yeni Objeyi
+        // responseMessage ile birlikte gondermeliyiz. Bu nedenle POJO objesi olan savedStudent objesini
+        // POJO->DTO(response) Donusumunu yapan methpda parametre olarak verebiliriz
+        // .object(createStudentResponse(savedStudent)) baska bir yolda zaten yeni update edilmis olan ve
+        // studentRepository ye bir (student) pojo su donduren SpringframeWorkun .save(student) methodunu
+        // asagidaki gibi direkt koyabiulirim
         return ResponseMessage.<StudentResponse>builder()
                 .message("Lessons added to Student")
-                .object(createStudentResponse(savedStudent))
+                .object(createStudentResponse(studentRepository.save(student)))
                 .httpStatus(HttpStatus.CREATED)
                 .build();
     }
 
+    // Not : getAllStudentByAdvisorUsername() ********************************************
+    public List<StudentResponse> getAllStudentByTeacher_Username(String username) {
+
+        return studentRepository.getStudentByAdvisorTeacher_Username(username)
+                .stream()
+                .map(this::createStudentResponse)
+                .collect(Collectors.toList());
+    }
+
+    public boolean existByUsername(String username) {
+        return studentRepository.existsByUsername(username);
+    }
+
+    public boolean existById(Long studentId) {
+        return studentRepository.existsById(studentId);
+    }
+
+    public List<Student> getStudentByIds(Long[] studentIds) {
+        return studentRepository.findByIdsEquals(studentIds);
+    }
+
+    public Optional<Student> getStudentByUsernameForOptional(String username) {
+
+        return studentRepository.findByUsernameEqualsForOptional(username);
+    }
 
 }

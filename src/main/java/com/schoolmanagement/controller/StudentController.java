@@ -134,7 +134,7 @@ public class StudentController {
                                                              // secimi yapabilecegi bir request classi olusturuyoruz
                                                              ChooseLessonProgramWithId chooseLessonProgramRequest){
         // bu kisimn servicede yazilirsa daha iyi olur
-                                    // artik elimizde bir request var. request e git bunun bir t.getAttribute() methodu
+                                    // artik elimizde bir request var. request e git bunun bir getAttribute() methodu
                                     // vardi key degeri ("username") olan fieldin valuesini getir diyoruz. Bu method
                                     // requesti karsilayacagi icin gelen requestin Attribute larina bakacak key degeri
                                     // username olan fieldin value sini alacak. gelen datayida
@@ -143,6 +143,20 @@ public class StudentController {
                          // cast islemi yapiyoruz ve datat turunu (String) olarak belirliyoruz.
 
         return studentService.chooseLesson(username,chooseLessonProgramRequest);
+    }
+
+    // Not : getAllStudentByAdvisorUsername() ********************************************
+
+    // request uzerin den gelen AdvisorTeacher in tum ogrencilerini getir. bunudu Teacher rolune sahip olan kisi yapacak
+    // yani Teacher, AdvisorTeacher ozelligine bagli olan tum Studentleri getirecek
+    @PreAuthorize("hasAnyAuthority('TEACHER')")
+    @GetMapping("/getAllByAdvisorId")
+    public List<StudentResponse>  getAllByAdvisorId(HttpServletRequest request) {
+
+        String username = (String) request.getAttribute("username"); // Json formattaki request in
+        // javax.servlet kutuphanesinden gelen getAttribute() methodu ile keyword u username olan data nin value sini
+        // Json yapidaki datayi cast islemi ile  String data type indeki username atiyoruz
+        return studentService.getAllStudentByTeacher_Username(username);
     }
 
 }
