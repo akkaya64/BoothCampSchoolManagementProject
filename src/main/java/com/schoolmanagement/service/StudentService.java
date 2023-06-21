@@ -372,21 +372,4 @@ public class StudentService {
                 .collect(Collectors.toList());
     }
 
-    public boolean existByUsername(String username) {
-        return studentRepository.existsByUsername(username);
-    }
-
-    public boolean existById(Long studentId) {
-        return studentRepository.existsById(studentId);
-    }
-
-    public List<Student> getStudentByIds(Long[] studentIds) {
-        return studentRepository.findByIdsEquals(studentIds);
-    }
-
-    public Optional<Student> getStudentByUsernameForOptional(String username) {
-
-        return studentRepository.findByUsernameEqualsForOptional(username);
-    }
-
 }
