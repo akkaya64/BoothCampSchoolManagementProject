@@ -388,6 +388,22 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
 
     }
 
+    // !!! StudentInfoService katmaninda layerinde kullanilmak icin olusturuldu
+    // Bir service katmaninda POJO donduren bir method varsa bu method baska bir service katmaninda kullanilmak uzere
+    // olusturulmustur yada soyle kotu bir tasarim yapilmistir service katmani pojo donduruyordur controller katmaninda
+    // POJO-DTO donusumu yapiliyordur
+    public Teacher getTeacherByUsername(String username) {
+        if (!teacherRepository.existsByUsername(username)){//request den gelen username eger DB de yoksa boolean olarak
+            // false donecek ama degeri false olunca if methodunun icine giremiyorduk bu nedenle false gelen degeri
+            // tersleyip if in icine girip username bulunamadi diye exception firlatiyoruz. varsa true gelecek ama
+            // tersleme islemi yaptigimiz icin true degeri false donecek ve if in icine girmeyip direk if in disinda
+            // bulunan return u aktive edecek
+            throw new ResourceNotFoundException(Messages.NOT_FOUND_USER_MESSAGE);
+        }
+
+        return teacherRepository.getTeacherByUsername(username);//TeacherRepository de getTeacherByUsername methodu
+        // olusturuldu. Cunku username uzerinden getirilen Teacher objesine ihtiyaci var.
+    }
 }
 
 

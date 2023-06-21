@@ -25,4 +25,8 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
         // IN : lesson; List halindeki id lerden (Set<Long> lessons)
 
     Set<Lesson> getLessonByLessonIdList(Set<Long> lessons);// Burada lessons in icinde id ler var
+
+
+    boolean getLessonById(Long lessonId);
+    Lesson findByLessonIdEquals(Long lessonId);
 }
