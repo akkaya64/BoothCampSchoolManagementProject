@@ -5,15 +5,26 @@ import com.schoolmanagement.entity.enums.Note;
 import com.schoolmanagement.exception.ConflictException;
 import com.schoolmanagement.exception.ResourceNotFoundException;
 import com.schoolmanagement.payload.request.StudentInfoRequestWithoutTeacherId;
+import com.schoolmanagement.payload.request.UpdateStudentInfoRequest;
 import com.schoolmanagement.payload.response.ResponseMessage;
 import com.schoolmanagement.payload.response.StudentInfoResponse;
 import com.schoolmanagement.payload.response.StudentResponse;
 import com.schoolmanagement.repository.StudentInfoRepository;
 import com.schoolmanagement.utils.Messages;
+
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -24,9 +35,8 @@ public class StudentInfoService {
     private final LessonService lessonService;
     private final EducationTermService educationTermService;
 
-    @Value("${midterm.exam.impact.percentage}") // $ suraya git manasinda
+    @Value("${midterm.exam.impact.percentage}")
     private Double midtermExamPercentage;
-
     @Value("${final.exam.impact.percentage}")
     private Double finalExamPercentage;
 
@@ -245,8 +255,175 @@ public class StudentInfoService {
                 .build();
     }
 
-// hocam bu sabah dan itibaren mesela yukarida yazdig8im methodu otomatik olarak studentInfoRepository de create
-// edebilmesi lazim d ama simdi yapmiyor. sanirim birde noktalama isaretlerine karsi bir duyarliligi gelisti kabiul
-// etmiyor gecersiz sembol diyor
+    // Not: update()****************************************************************
+
+    public ResponseMessage<StudentInfoResponse> update(UpdateStudentInfoRequest studentInfoRequest, Long studentInfoId) {
+
+        //!!! Parametreden gelen datalar ile nesneler elde ediliyor
+        Lesson lesson = lessonService.getLessonById(studentInfoRequest.getLessonId());//studentInfoRequest den gelen
+        // lessonId ile bir lesson a ihtiyacimiz var. Gelen lesson pojo olmali cunku DB ile ilgili bir islem yapilacak.
+        // TODO : öğrencinin matematik ve fizik infosu olsa fiziği matematik yapmaya çalışırken hata fırlatmamız lazım değil mi ??
+
+        // update methodunun parametresinden gelen dolayisi ile controller katmaninda pathVariable ile endpointten
+        // getirdigimiz bir studentInfoId isimli id miz vardi buradan gelen id ile bir getStudentInfoById methodu
+        // yazip studentInfoyu getirebiliriz donen studentInfo objesi POJO oldugu icin bu objeyi StudentInfo data
+        // turundeki getStudentInfo isimli bir degiskene maplayabiliriz. Asagida bu methodu yazacagiz.
+        StudentInfo getStudentInfo = getStudentInfoById(studentInfoId);
+
+        EducationTerm educationTerm = educationTermService.getById(studentInfoRequest.getEducationTermId());
+        // educationTermService den .getById() methodunu cagirdigimizda pojo bir EducationTerm dondurdugu icin bu
+        // methodu kullanabiliriz bu methodun parametresine studentInfoRequest bodysinden gelen Long data turundeki
+        // educationTermId yi verebiliriz bu bize bir EducationTerm dondurur. bunuda EducatioanTerm turundeki
+        // educationTerm variable ina setleyebiliriz
+
+        // NOTE Optional yapilarin Java Programlama diledahil olmasinin en buyuk sebebi NullPointException almaktan kurtulmak
+        // TODO Optional yapilari mantigini iyi kavraman lazim....
+
+        // !!! Dersnot ortalamasi hesaplaniyor.. daha once kullandigimiz calculateExamAverage() methodunu burada da
+        // kullanabiliriz. methodun parametrelerini requestBody den getiriyoruz
+        Double noteAverage = calculateExamAverage(studentInfoRequest.getMidtermExam(), studentInfoRequest.getFinalExam());
+
+        //!!! AlfabetikNot belirlenecek.. save methodunu olustururken olusturdugumuz checkLetterGrade() methodunu
+        // kullanabiliriz
+        Note note = checkLetterGrade(noteAverage);
+
+        // !!! DTO--> POJO
+        StudentInfo studentInfo = createUpdatedStudent(studentInfoRequest,
+                studentInfoId,
+                lesson,
+                educationTerm,
+                note,
+                noteAverage);
+
+        // !!! Student ve Teacher nesneleri ekleniyor
+        studentInfo.setStudent(getStudentInfo.getStudent());
+        studentInfo.setTeacher(getStudentInfo.getTeacher());
+
+        // !!! DB kayit islemi
+        StudentInfo updatedStudentInfo = studentInfoRepository.save(studentInfo);
+
+        // !!! Response nesnesi olusturuluyor
+
+        return ResponseMessage.<StudentInfoResponse>builder()
+                .message("Student Info Updated Successfully")
+                .httpStatus(HttpStatus.OK)
+                .object(createResponse(updatedStudentInfo))
+                .build();
+    }
+
+    private StudentInfo getStudentInfoById(Long studentInfoId ){
+
+        if(!studentInfoRepository.existsByIdEquals(studentInfoId)) {
+            throw new ResourceNotFoundException(String.format(Messages.STUDENT_INFO_NOT_FOUND, studentInfoId));
+        }
+        return studentInfoRepository.findByIdEquals(studentInfoId); // findById() hazir methodu Optional yapida bir obje
+        // donduruyor ama bize POJO yapida bir obje donduren bir methoda ihtiyacimiz var cunku data DB den gelecegi
+        // icin POJO bir yapida. Bize pojo yapida bir obje donduren methodu findById() methodundan turetebiliriz
+    }
+
+    // DTO-->POJO donusumunu yapan method
+    private StudentInfo createUpdatedStudent(UpdateStudentInfoRequest studentInfoRequest,// methodun parametresine once
+                                             // requestin kendisini verdik sonra update edilip DB ye kayit edilecek
+                                             // diger degiskenleri veriyoruz
+                                             Long studentInfoRequestId,//PathVariable den  gelen Id yi
+                                             Lesson lesson,//requestbody den gelen Lesson objesi
+                                             EducationTerm educationTerm,//requestbody den gelen educationTerm objesini
+                                             Note note,//requestbody den gelen sayisal ders notlarinin harf note
+                                             // sistemine cevrilmis objesi
+                                             Double average) {//requestbody den gelen sinav notlari ile ortalamasi
+                                             // heseplanan objesi
+        return StudentInfo.builder()
+                .id(studentInfoRequestId)
+                .infoNote(studentInfoRequest.getInfoNote())
+                .midtermExam(studentInfoRequest.getMidtermExam())
+                .finalExam(studentInfoRequest.getFinalExam())
+                .absentee(studentInfoRequest.getAbsentee())
+                .lesson(lesson)
+                .educationTerm(educationTerm)
+                .examAverage(average)
+                .letterGrade(note)
+                .build();
+    }
+
+
+    // Not: getAllForAdmin()*********************************************************
+    public Page<StudentInfoResponse> getAllForAdmin(Pageable pageable) {
+
+        return studentInfoRepository.findAll(pageable).map(this::createResponse);// studentInfoRepository den findAll()
+        // methoduyla (pageable) yapidaki objeleri getir.. map methodunun icinde gelen bu(this) pageable akisini
+        // createResponse methodunu kullanarak response cevir ve return et.
+    }
+
+    // Not: getAllForTeacher()*********************************************************
+    public Page<StudentInfoResponse> getAllTeacher(Pageable pageable, String username) {
+        boolean teacher = teacherService.existByUsername(username);
+        if (!teacher) throw new ResourceNotFoundException(username);
+
+        return studentInfoRepository.findByTeacherId_UsernameEquals(username,pageable).map(this::createResponse);
+        // studentInfoRepository gidilecek buradan teacher e ulasilacak teacher in username fieldi ile o teacher
+        // username ine a ait olan studentlerin student infolarini getirecegiz
+        // findByTeacherId_UsernameEquals() bu methodun nasil calisacagini Repository de olusturacagimiz Query ile
+        // biz belirleyyecegiz.
+        // studentInfoRepository. --> ye git
+        // findByTeacherId --> id ile teacher i bul , AMA HANGI TEACHERI
+        // _UsernameEquals --> httpServletRequest en gelen username ile eslesen teacherin ID si ile
+        // map() den once gelen (this) tum datalar gonder (::) createResponse methoduna ki pojo_dto donusumunu yapalim
+    }
+
+
+    // Not: getAllForStudent()*********************************************************
+    public Page<StudentInfoResponse> getAllStudentInfoByStudent(String username, Pageable pageable) {
+        boolean student = studentService.existByUsername(username);//postmen deki denemeler sirasinda username i elle
+        // girecegimiz icin boyle bir username yoksa apllicatioan durur.
+        if(!student) throw new ResourceNotFoundException(Messages.NOT_FOUND_USER_MESSAGE);
+
+        return studentInfoRepository.findByStudentId_UsernameEquals(username,pageable).map(this::createResponse);
+    }
+
+
+    // Not: getStudentInfoByStudentId()*************************************************
+
+    public List<StudentInfoResponse> getStudentInfoByStudentId(Long studentId) {
+
+        if(!studentService.existById(studentId)) {// requestten gelen Id li Student DB de varmi kontrol edilecek
+            throw new ResourceNotFoundException(String.format(Messages.NOT_FOUND_USER2_MESSAGE, studentId));
+        }
+        if(!studentInfoRepository.existsByStudent_IdEquals(studentId)) {// bu student id sine ait bir studentInfo
+            // varmi kontrol edilmeli
+            throw new ResourceNotFoundException(String.format(Messages.STUDENT_INFO_NOT_FOUND_BY_STUDENT_ID, studentId));
+        }
+
+        return studentInfoRepository.findByStudent_IdEquals(studentId)
+                // yukaridaki kontrollerden gectikten sonra artik requestten gelen student id si ile DB ye gidecek
+                // bu id ile eslesen bir student objesinin studentInfo objesini getirecek
+                .stream()
+                .map(this::createResponse)
+                .collect(Collectors.toList());
+    }
+
+
+    // Not: getStudentInfoById()*******************************************************
+
+    public StudentInfoResponse findStudentInfoById(Long id) {
+
+        if(!studentInfoRepository.existsByIdEquals(id)) {
+            throw new ResourceNotFoundException(String.format(Messages.STUDENT_INFO_NOT_FOUND,id));
+        }
+
+        return createResponse(studentInfoRepository.findByIdEquals(id));
+
+    }
+
+    // Not: getAllWithPage()******************************************************
+
+    public Page<StudentInfoResponse> search(int page, int size, String sort, String type) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
+        if (Objects.equals(type, "desc")) {
+            pageable = PageRequest.of(page, size, Sort.by(sort).descending());
+        }
+
+        return studentInfoRepository.findAll(pageable).map(this::createResponse);
+    }
 
 }

@@ -404,6 +404,10 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
         return teacherRepository.getTeacherByUsername(username);//TeacherRepository de getTeacherByUsername methodu
         // olusturuldu. Cunku username uzerinden getirilen Teacher objesine ihtiyaci var.
     }
+
+    public boolean existByUsername(String username) {
+        return teacherRepository.existsByUsername(username);
+    }
 }
 
 

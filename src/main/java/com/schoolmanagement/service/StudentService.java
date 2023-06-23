@@ -372,4 +372,11 @@ public class StudentService {
                 .collect(Collectors.toList());
     }
 
+    public boolean existByUsername(String username) {
+        return studentRepository.existsByUsername(username);
+    }
+
+    public boolean existById(Long studentId) {
+        return studentRepository.existsById(studentId);
+    }
 }
