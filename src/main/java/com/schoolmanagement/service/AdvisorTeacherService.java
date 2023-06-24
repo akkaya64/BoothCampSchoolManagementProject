@@ -186,7 +186,8 @@ public class AdvisorTeacherService {
         return advisorTeacherRepository.findById(id);
     }
 
-    public Optional<AdvisorTeacher> getAdvisorTeacherByUsername(String username) {
+    public Optional<AdvisorTeacher> getAdvisorTeacherByUsername(String username) {// DB den Optional yada Pojo bir class
+        // donuyorsa bu baska bir service katmaninda kullaniliyordur
 
         return advisorTeacherRepository.findByTeacher_UsernameEquals(username);
     }

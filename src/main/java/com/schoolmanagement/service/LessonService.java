@@ -195,9 +195,10 @@ public class LessonService {
 
     //StudentInfoService icin HttpServletRequest den gelen lessonId si ile DB den Lesson lari bulup getiren bir method
     public Lesson getLessonById(Long lessonId) {
-        if (!lessonRepository.getLessonById(lessonId)){
-            throw new ResourceNotFoundException(String.format(Messages.NOT_FOUND_LESSON_MESSAGE, lessonId));
-        }
+
+        if(!lessonRepository.existsByLessonIdEquals(lessonId))
+            throw  new ResourceNotFoundException(String.format(Messages.NOT_FOUND_LESSON_MESSAGE,lessonId));
+
         return lessonRepository.findByLessonIdEquals(lessonId);
     }
 }

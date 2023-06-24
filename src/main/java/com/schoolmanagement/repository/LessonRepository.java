@@ -26,7 +26,10 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
 
     Set<Lesson> getLessonByLessonIdList(Set<Long> lessons);// Burada lessons in icinde id ler var
 
-
-    boolean getLessonById(Long lessonId);
+    boolean existsByLessonIdEquals(Long lessonId);
+   
     Lesson findByLessonIdEquals(Long lessonId);
+
+
+
 }
