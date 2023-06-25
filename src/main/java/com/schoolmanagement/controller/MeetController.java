@@ -1,6 +1,7 @@
 package com.schoolmanagement.controller;
 
 import com.schoolmanagement.payload.request.MeetRequestWithoutId;
+import com.schoolmanagement.payload.request.UpdateMeetRequest;
 import com.schoolmanagement.payload.response.MeetResponse;
 import com.schoolmanagement.payload.response.ResponseMessage;
 import com.schoolmanagement.service.MeetService;
@@ -77,5 +78,33 @@ public class MeetController {
     public ResponseMessage<?> delete(@PathVariable Long meetId){
         return meetService.delete(meetId);
     }
+
+    // Not :  update() ***********************************************************************
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN' )")
+    @PutMapping("/update/{meetId}")
+    public ResponseMessage<MeetResponse> update(@RequestBody @Valid UpdateMeetRequest meetRequest,
+                                                @PathVariable Long meetId){
+        return meetService.update(meetRequest,meetId);
+    }
+
+    // Not :  getAllMeetByStudent() **********************************************************
+    @PreAuthorize("hasAnyAuthority('STUDENT')")
+    @GetMapping("/getAllMeetByStudent")
+    public List<MeetResponse> getAllMeetByStudent(HttpServletRequest httpServletRequest){
+        String username = httpServletRequest.getHeader("username");
+        return meetService.getAllMeetByStudentByUsername(username);
+    }
+
+    // Not :  getAllWithPage() **********************************************************
+    @PreAuthorize("hasAnyAuthority( 'ADMIN')")
+    @GetMapping("/search")
+    public Page<MeetResponse> search(
+            @RequestParam(value = "page") int page,
+            @RequestParam(value = "size") int size
+    ){
+        return meetService.search(page,size);
+    }
+
+
 
 }
