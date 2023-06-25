@@ -140,7 +140,7 @@ public class LessonProgramService {
                 .startTime(lessonProgram.getStartTime())
                 .stopTime(lessonProgram.getStopTime())
                 .lessonProgramId(lessonProgram.getId())
-                .lessonName(lessonProgram.getLesson())
+                //.lessonName(lessonProgram.getLesson())
                 .teachers(lessonProgram.getTeachers()
                         //bu yapi bize pojo dondurdu bunu DTO ya cevirmemiz lazim
                         .stream()

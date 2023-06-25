@@ -5,14 +5,17 @@ import com.schoolmanagement.payload.response.MeetResponse;
 import com.schoolmanagement.payload.response.ResponseMessage;
 import com.schoolmanagement.service.MeetService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("meet")
@@ -28,4 +31,51 @@ public class MeetController {
         String username = httpServletRequest.getHeader("username");
         return meetService.save(username, meetRequest);
     }
+
+    // Not : getAll() *************************************************************************
+    @PreAuthorize("hasAnyAuthority( 'ADMIN')")
+    @GetMapping("/getAll")
+    public List<MeetResponse> getAll(){
+        return meetService.getAll();
+    }
+
+    // Not :  getMeetById() ********************************************************************
+    @PreAuthorize("hasAnyAuthority( 'ADMIN')")
+    @GetMapping("/getMeetById/{meetId}")
+    public ResponseMessage<MeetResponse> getMeetById(@PathVariable Long meetId){
+
+        return meetService.getMeetById(meetId);
+    }
+
+    // Not : getAllMeetByAdvisorAsPage() **************************************************
+    @PreAuthorize("hasAnyAuthority('TEACHER')")
+    @GetMapping("/getAllMeetByAdvisorAsPage")
+    public ResponseEntity<Page<MeetResponse>> getAllMeetByAdvisorAsPage(
+            HttpServletRequest httpServletRequest,
+            @RequestParam(value = "page") int page,
+            @RequestParam(value = "size") int size
+    ){
+        String username = httpServletRequest.getHeader("username");
+        Pageable pageable = PageRequest.of(page,size, Sort.by("date").descending());
+        Page<MeetResponse> meet = meetService.getAllMeetByAdvisorTeacherAsPage(username,pageable);
+        return ResponseEntity.ok(meet);
+    }
+
+    // Not :  getAllMeetByAdvisorTeacherAsList() *********************************************
+    @PreAuthorize("hasAnyAuthority('TEACHER' )")
+    @GetMapping("/getAllMeetByAdvisorTeacherAsList")
+    public ResponseEntity<List<MeetResponse>> getAllMeetByAdvisorTeacherAsList(HttpServletRequest httpServletRequest){
+
+        String username = httpServletRequest.getHeader("username");
+        List<MeetResponse> meet = meetService.getAllMeetByAdvisorTeacherAsList(username);
+        return ResponseEntity.ok(meet);
+    }
+
+    // Not :  delete() ***********************************************************************
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN' )")
+    @DeleteMapping("/delete/{meetId}")
+    public ResponseMessage<?> delete(@PathVariable Long meetId){
+        return meetService.delete(meetId);
+    }
+
 }

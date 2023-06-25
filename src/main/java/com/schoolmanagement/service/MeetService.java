@@ -15,12 +15,15 @@ import com.schoolmanagement.repository.StudentRepository;
 import com.schoolmanagement.utils.Messages;
 import com.schoolmanagement.utils.TimeControl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -139,6 +142,62 @@ public class MeetService {
                 .teacherSsn(meet.getAdvisorTeacher().getTeacher().getSsn())
                 .teacherName(meet.getAdvisorTeacher().getTeacher().getName())
                 .students(meet.getStudentList())
+                .build();
+    }
+
+    // Not : getAll() *************************************************************************
+    public List<MeetResponse> getAll() {
+
+        return meetRepository.findAll()
+                .stream()
+                .map(this::createMeetResponse)
+                .collect(Collectors.toList());
+    }
+
+
+    // Not :  getMeetById() ********************************************************************
+    public ResponseMessage<MeetResponse> getMeetById(Long meetId) {
+
+        Meet meet = meetRepository.findById(meetId).orElseThrow(()->
+                new ResourceNotFoundException(String.format(Messages.MEET_NOT_FOUND_MESSAGE,meetId)));
+
+        return ResponseMessage.<MeetResponse>builder()
+                .message("Meet Successfully found")
+                .httpStatus(HttpStatus.OK)
+                .object(createMeetResponse(meet))
+                .build();
+    }
+
+    // Not : getAllMeetByAdvisorAsPage() **************************************************
+    public Page<MeetResponse> getAllMeetByAdvisorTeacherAsPage(String username, Pageable pageable) {
+        AdvisorTeacher advisorTeacher = advisorTeacherService.getAdvisorTeacherByUsername(username).orElseThrow(()->
+                new ResourceNotFoundException(String.format(Messages.NOT_FOUND_ADVISOR_MESSAGE_WITH_USERNAME,username)));
+
+        return meetRepository.findByAdvisorTeacher_IdEquals(advisorTeacher.getId(), pageable) // advisorTeacher.getMeet()
+                .map(this::createMeetResponse);
+    }
+
+    // Not :  getAllMeetByAdvisorTeacherAsList() *********************************************
+    public List<MeetResponse> getAllMeetByAdvisorTeacherAsList(String username) {
+        AdvisorTeacher advisorTeacher = advisorTeacherService.getAdvisorTeacherByUsername(username).orElseThrow(()->
+                new ResourceNotFoundException(String.format(Messages.NOT_FOUND_ADVISOR_MESSAGE_WITH_USERNAME,username)));
+     return meetRepository.getByAdvisorTeacher_IdEquals(advisorTeacher.getId())
+                    .stream()
+                    .map(this::createMeetResponse)
+                    .collect(Collectors.toList());
+
+
+    }
+
+    // Not :  delete() ***********************************************************************
+    public ResponseMessage<?> delete(Long meetId) {
+       Meet meet = meetRepository.findById(meetId).orElseThrow(()->
+                new ResourceNotFoundException(String.format(Messages.MEET_NOT_FOUND_MESSAGE, meetId)));
+
+        meetRepository.deleteById(meetId);
+        return ResponseMessage.builder()
+                .message("Meet Deleted Successfully")
+                .httpStatus(HttpStatus.OK)
                 .build();
     }
 }
