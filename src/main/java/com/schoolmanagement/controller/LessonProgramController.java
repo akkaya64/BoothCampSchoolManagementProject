@@ -25,8 +25,15 @@ public class LessonProgramController {
     private final LessonProgramService lessonProgramService; //ilk etapta Service katmani ile iliski kurulacak
 
     // Not :  Save() *************************************************************************
+//    {
+//        "day": "MONDAY",
+//            "startTime": "09:00",
+//            "stopTime": "11:00",
+//            "lessonIdList": [2, 3],
+//        "educationTermId": 1
+//    }
     @PostMapping("/save")  // http://localhost:8080/lessonPrograms/save
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     // Hey daha fazla ilerlemeden ResponseMessage generic olarak verecegin classi once bir olustur lutfen yoksa
     // kullniciya hangi objeyi dondureceksin... Tabiki Kullanicidan alacagin bilgiler icinde bir request calas
     // olusturman  gerektigini biliyorsundur...
@@ -36,7 +43,7 @@ public class LessonProgramController {
 
     // Not :  getAll() *************************************************************************
     @GetMapping("/getAll")  // http://localhost:8080/lessonPrograms/getAll
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER','TEACHER','STUDENT')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER','TEACHER','STUDENT')")
     public List<LessonProgramResponse> getAll() {
         return lessonProgramService.getAllLessonProgram();
     }
@@ -44,7 +51,7 @@ public class LessonProgramController {
     // Not :  getById() ************************************************************************
 
     @GetMapping("/getById/{id}") //http://localhost:8080/lessonPrograms/getById/1
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     public LessonProgramResponse getById(@PathVariable Long id) {
         return lessonProgramService.getByLessonProgramId(id);
     }
@@ -52,27 +59,27 @@ public class LessonProgramController {
     // Not :  getAllLessonProgramUnassigned() **************************************************
     // Henuz Teacher atamasi yapilmamais LessonProgram lar
     @GetMapping("/getAllUnassigned") //http://localhost:8080/lessonPrograms/getAllUnassigned
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER','TEACHER','STUDENT')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER','TEACHER','STUDENT')")
     public List<LessonProgramResponse> getAllUnassigned() {
         return lessonProgramService.getAllLessonProgramUnassigned();
     }
 
     // Not :  getAllLessonProgramAssigned() **************************************************
     @GetMapping("/getAllAssigned") //http://localhost:8080/lessonPrograms/getAllAssigned
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER','TEACHER','STUDENT')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER','TEACHER','STUDENT')")
     public List<LessonProgramResponse> getAllAssigned() {
         return lessonProgramService.getAllLessonProgramAssigned();
     }
 
     // Not :  Delete() *************************************************************************
     @DeleteMapping("/delete/{id}") //http://localhost:8080/lessonPrograms/delete/1
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     public ResponseMessage delete (@PathVariable Long id) {
         return lessonProgramService.deleteLessonProgram(id);
     }
 
     // Not :  getLessonProgramByTeacher() ******************************************************
-    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN','MANAGER','ASSISTANT_MANAGER')")
     @GetMapping("/getAllLessonProgramByTeacher")  //http://localhost:8080/lessonPrograms/getAllLessonProgramByTeacher
     // Bu endpointi farkli bir sekilde calisacagiz. datayi daha once yaptiklarimizda endpointin icinden olusan {id} gibi
     // field isimlerinden @PathVariable ile iliskilendiriyorduk bu fieldin ismi endpoint de gorunmesin ama silinecek
@@ -102,7 +109,7 @@ public class LessonProgramController {
     }
 
     // Not :  getLessonProgramByStudent() ******************************************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER', 'TEACHER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER', 'TEACHER')")
     @GetMapping("/getAllLessonProgramByStudent") //http://localhost:8080/lessonPrograms/getAllLessonProgramByStudent
     public Set<LessonProgramResponse> getAllLessonProgramByStudent(HttpServletRequest httpServletRequest) {
         // HttpServletRequest Classini almamizin sebebi Requestteki unique bir deger olan username ulasmak.
@@ -128,7 +135,7 @@ public class LessonProgramController {
     }
 
     // Not :  getAllWithPage() ******************************************************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER','TEACHER','STUDENT')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER','TEACHER','STUDENT')")
     @GetMapping("/search")
     public Page<LessonProgramResponse> search(
             @RequestParam(value = "page") int page,

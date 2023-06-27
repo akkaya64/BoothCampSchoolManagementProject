@@ -272,7 +272,7 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
     }
 
     // Not: getTeacherByName() **************************************************
-    public List<TeacherResponse> getTeacherByName(String teacherName) {
+    public List<TeacherResponse> getTeacherByName(String teacherName) {// {{local}}/teachers/getTeacherByName?name=teacher1
 
         // DB den gelecek Pojo datalari DTO ya cevirmeliyiz
         // burada keyword lari kullanarak bir get methodu turetmeliyiz. Keywordlar kullandigimiz icin Repositoryde
@@ -290,7 +290,7 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
     }
 
     // Not: deleteTeacher() *****************************************************
-    public ResponseMessage<?> deleteTeacher(Long id) {
+    public ResponseMessage<?> deleteTeacher(Long id) {//{{local}}/teachers/delete/2
 
         teacherRepository.findById(id).orElseThrow(()->{
             throw new ResourceNotFoundException(Messages.NOT_FOUND_USER_MESSAGE);
@@ -369,7 +369,6 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
         // yeni bir class olusturup icine gerekli methodu yazacagiz. Bunu eklenecek olan LessonProgram indaki
         // Lesson larin baslama ve bitis zmanlari ile Teacher in mevcud LessonProgramin daki Lesson larin
         // baslama ve bitis zamanlarinin cakisip cakismadigini kontrol edecegiz.
-
 
         CheckSameLessonProgram.checkLessonPrograms(existLessonProgram,lessonPrograms);
         existLessonProgram.addAll(lessonPrograms);// existLessonProgram 'a utils kutuphanesinde bulunan .addAll

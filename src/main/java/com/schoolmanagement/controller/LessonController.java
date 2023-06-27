@@ -22,7 +22,12 @@ public class LessonController {
 
     // Not :  Save() *************************************************************************
 
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+//    {
+//        "lessonName": "Chemical",
+//            "creditScore": 5,
+//            "isCompulsory": true
+//    }
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     @PostMapping("/save") // http://localhost:8080/lessons/save end poind save ile biterse asagidaki method tam size
     // gore buyrun girin cekinmeyin evinizde gibi hissedin lutfen ne arzu ederdiniz bir seve methodumu o zaman save
     // logical islemleri icin Service katina burun...
@@ -42,14 +47,14 @@ public class LessonController {
     }
 
     // Not :  Delete() *************************************************************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     @DeleteMapping("/delete/{id}") // http://localhost:8080/lessons/delete/1
     public ResponseMessage deleteLesson(@PathVariable Long id) {
         return lessonService.deleteLesson(id);
     }
 
     // Not : getLessonByLessonName() **********************************************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     @GetMapping("/getLessonByName") // http://localhost:8080/lessons/getLessonByName?lessonName=Math
     public ResponseMessage<LessonsResponse> getLessonByLessonName(@RequestParam String lessonName) {
         return lessonService.getLessonByLessonName(lessonName);// getLessonByLessonName uzerine gelip Service
@@ -58,7 +63,7 @@ public class LessonController {
     }
 
     // Not :  getAllLesson() **********************************************************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')") // TODO student veya teacher kelenebilir mi ??
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')") // TODO student veya teacher kelenebilir mi ??
     @GetMapping("/getAll")  // http://localhost:8080/lessons/getAll
     public List<LessonsResponse> getAllLesson() {//Respnse mesaj turunde de gonderebilirsin ama herhangi bir parametre
         // almadan hepsi gonderilecegi icin basit simple bir List seklinde de gonderebilirisin.
@@ -67,8 +72,8 @@ public class LessonController {
     }
 
     // Not :  getAllWithPage() **********************************************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
-    @GetMapping("/search")   // http://localhost:8080/lessons/search?page=0&size=1&sort=lessonName&type=desc
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
+    @GetMapping("/search")   // http://localhost:8080/lessons/search?page=0&size=1&sort=id&type=desc
     public Page<LessonsResponse> search(
             @RequestParam(value = "page") int page,
             @RequestParam(value = "size") int size,
@@ -79,7 +84,7 @@ public class LessonController {
     }
 
     // Not :  getAllLessonByLessonIds() *****************************************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     @GetMapping("/getAllLessonByLessonId")  // http://localhost:8080/lessons/getAllLessonByLessonId?lessonId=1,2
     public Set<Lesson> getAllLessonByLessonId(@RequestParam(name = "lessonId") Set<Long> idList){
         // Gelen objenin ki burada obje Lesson oluyor Lesson larin Unique olmasi icin Set methodunu kullnmalisin.
