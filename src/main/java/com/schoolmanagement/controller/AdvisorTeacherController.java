@@ -25,7 +25,7 @@ public class AdvisorTeacherController {
     // AdvisorTeacherService katmaninda yapilacak
 
     // Not: deleteAdvisorTeacher() ******************************************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     @DeleteMapping("/delete/{id}")
                                                                 //Buradaki id AdvisorTeacher id si degil. Burada yeni
     // bir Id create ediliyor new leniyor ama Service katinda bu id yi AdvisorTeacher id si olarak al diyecegiz
@@ -41,7 +41,7 @@ public class AdvisorTeacherController {
     }
 
     // Not: getAllAdvisorTeacher() ******************************************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     @GetMapping("/getAll")
     public List<AdvisorTeacherResponse> getAllAdvisorTeacher(){//DTO yapida bir AdvisorTeacherResponse List i dondurecek
 
@@ -49,7 +49,7 @@ public class AdvisorTeacherController {
     }
 
     // Not: getAllAdvisorTeacherWithPage() **********************************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     @GetMapping("/search")
     public Page<AdvisorTeacherResponse> search(
             @RequestParam(value = "page") int page,

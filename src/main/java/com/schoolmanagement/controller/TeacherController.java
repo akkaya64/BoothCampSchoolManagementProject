@@ -20,7 +20,22 @@ public class TeacherController {
     private final TeacherService teacherService;
 
     // Not: Save() **********************************************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+
+//    {
+//        "username": "teacher1",
+//            "name": "teacher",
+//            "surname": "teacher",
+//            "birthDay": "1975-08-15",
+//            "ssn": "123-12-4289",
+//            "birthPlace": "US",
+//            "password": "12345678",
+//            "phoneNumber": "555-003-4527",
+//            "gender": "MALE",
+//            "lessonsIdList": [3],
+//        "isAdvisorTeacher": true,
+//            "email": "vvv@vvv.com"
+//    }
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     @PostMapping("/save")  // http://localhost:8080/teachers/save
     // TeacherRequest adinda bir classimiz olmali ki kayit edilecek bilgileri requestin bodys inden
     // @RequestBody interface i ile cekebilelim ve requestten gelen verileri @Valid ile validationdan gecirelim
@@ -30,7 +45,7 @@ public class TeacherController {
     }
 
     // Not: getAll() **********************************************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     @GetMapping("/getAll") // http://localhost:8080/teachers/getAll
     public List<TeacherResponse> getAllTeacher(){ // sadece TeacherResponse den DTO olarak Json formatinda Teacher lari
         // List yapida lacak. harhangi bir save yada update gibi bir islem yapmayacak veya bir parametreye bagli olarak
@@ -41,7 +56,7 @@ public class TeacherController {
     }
 
     // Not: updateTeacherById() ************************************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     @PutMapping("/update/{userId}")  // http://localhost:8080/teachers/update/1
     // Bu method update edilmis bir TeacherResponse 'i ResponseMessage olarak dondurecek.  endPoint den gelen id yi
     // @PathVariable Long userId ile alip bu id ye ait Teacher i TeacherRequest in body @RequestBody sinden
@@ -56,7 +71,7 @@ public class TeacherController {
     }
 
     // Not: getTeacherByName() **************************************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     @GetMapping("/getTeacherByName")
     //teacherName 'i @PathVariable, @RequestParam, @RequestBody, @RequestAttribute yada Json dosyadan(Request Objesi) da
     // alabiliriz Burada  @RequestParam ile getirelim name keywordunu kullanarak endPoint den (name = "name")"name"
@@ -68,7 +83,7 @@ public class TeacherController {
     }
 
     // Not: deleteTeacher() *****************************************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     @DeleteMapping("/delete/{id}")
     // gelen deger generic bir yapida gelecek ama birsey dondurulmeyecek bu nedenle diamond icine birsey yazmiyoruz
     // <?> yaziyoruz.
@@ -77,16 +92,16 @@ public class TeacherController {
     }
 
     // Not: getTeacherById() ****************************************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     @GetMapping("/getSavedTeacherById/{id}")
-    public ResponseMessage<TeacherResponse> getSavedTeacherById(@PathVariable Long id){
+    public ResponseMessage<TeacherResponse> getSavedTeacherById(@PathVariable Long id){//{{local}}/teachers/getSavedTeacherById/1
         return teacherService.getSavedTeacherById(id);
     }
 
 
 
     // Not: getAllWithPage() ****************************************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     @GetMapping("/search")
     public Page<TeacherResponse> search(
             @RequestParam(value = "page") int page,
@@ -99,7 +114,7 @@ public class TeacherController {
 
 
     // Not: addLessonProgramToTeachersLessonsProgram() **********************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     @PostMapping("/chooseLesson")
     // Teachere a LessonProgram atayabilmemiz icin requestin Body sinde requestten gelen LessonProgram 'a ve
     // LessonProgramin setlenecegi bir Teacher 'a ait id lerin bulunmasi gerekiyor. Bunlari requestin Bodysinden

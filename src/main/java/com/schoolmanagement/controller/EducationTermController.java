@@ -20,6 +20,14 @@ public class EducationTermController {
     private final EducationTermService educationTermService;
 
     // Not :  Save() *************************************************************************
+
+//    {
+//        "id": 1,
+//            "term":"FALL_SEMESTER",
+//            "startDate":"2023=01-01",
+//            "endDate":"2023-02-28",
+//            "lastRegistrationDate":"2022-12-20"
+//    }
     @PostMapping("/save")   // http://localhost:8080/educationTerms/save
     @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER')")
     public ResponseMessage<EducationTermResponse> save(@RequestBody @Valid EducationTermRequest educationTermRequest){
@@ -28,21 +36,21 @@ public class EducationTermController {
 
     }
     // Not :  getById() ************************************************************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER','TEACHER')") // student ?
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER','TEACHER')") // student ?
     @GetMapping("/{id}")  // http://localhost:8080/educationTerms/1
     public EducationTermResponse get(@PathVariable Long id){
         return educationTermService.get(id);
     }
 
     // Not :  getAll() *************************************************************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER','TEACHER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER','TEACHER')")
     @GetMapping("/getAll")  // http://localhost:8080/educationTerms/getAll
     public List<EducationTermResponse> getAll() {
         return educationTermService.getAll();
     }
 
     // Not :  getAllWithPage() ******************************************************************
-    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANTMANAGER','TEACHER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER','TEACHER')")
     @GetMapping("/search") // http://localhost:8080/educationTerms/search?page=0&size=10&sort=startDate&type=desc
     public Page<EducationTermResponse> getAllWithPage(
             @RequestParam(value = "page", defaultValue = "0") int page,
