@@ -1,6 +1,7 @@
 package com.schoolmanagement.service;
 
 import com.schoolmanagement.entity.concretes.LessonProgram;
+import com.schoolmanagement.entity.concretes.Student;
 import com.schoolmanagement.entity.concretes.Teacher;
 import com.schoolmanagement.entity.enums.RoleType;
 import com.schoolmanagement.exception.BadRequestException;
@@ -407,6 +408,10 @@ public class TeacherService {//Evet hadi bu Classi insa etmeye once ihtiyac duya
     public boolean existByUsername(String username) {
         return teacherRepository.existsByUsername(username);
     }
+
+//    public Set<Teacher> getTeacherByIds(List<Long> teacherIds){
+//        return teacherRepository.findByIdsEquals(teacherIds);//studentRepository.findByIdsEquals(studentIds);
+//    }
 }
 
 

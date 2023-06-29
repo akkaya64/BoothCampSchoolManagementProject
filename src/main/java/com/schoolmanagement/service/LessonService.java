@@ -201,4 +201,8 @@ public class LessonService {
 
         return lessonRepository.findByLessonIdEquals(lessonId);
     }
+
+//    public List<Lesson> getLessonByLessonIdListByList(List<Long> lessonIdList) {
+//        return lessonRepository.findAllById(lessonIdList);
+//    }
 }
