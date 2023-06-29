@@ -398,4 +398,7 @@ public class StudentService {
     public Optional<Student> getStudentByUsernameForOptional(String username) {
         return studentRepository.findByUsernameEqualsForOptional(username);
     }
+//    public Set<Student> getStudentByIds(List<Long> studentIds){
+//        return studentRepository.findByIdsEquals(studentIds);
+//    }
 }

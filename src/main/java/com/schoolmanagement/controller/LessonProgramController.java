@@ -3,6 +3,7 @@ package com.schoolmanagement.controller;
 // ama once bunu Springframewoorke classin basina gerekli annotationu koyarak bildirmelisin
 
 import com.schoolmanagement.payload.request.LessonProgramRequest;
+import com.schoolmanagement.payload.request.LessonProgramRequestForUpdate;
 import com.schoolmanagement.payload.response.LessonProgramResponse;
 import com.schoolmanagement.payload.response.ResponseMessage;
 import com.schoolmanagement.service.LessonProgramService;
@@ -145,4 +146,14 @@ public class LessonProgramController {
     ){
         return lessonProgramService.search(page,size,sort,type);
     }
+
+    // Not :  update() ******************************************************************
+//    @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','TEACHER')")
+//    @PutMapping("/update/{lessonProgramId}")
+//    public ResponseMessage<LessonProgramResponse> update(
+//            @PathVariable Long lessonProgramId,
+//            @RequestBody @Valid LessonProgramRequestForUpdate lessonProgramRequest
+//            ){
+//        return lessonProgramService.update(lessonProgramId,lessonProgramRequest);
+//    }
 }
