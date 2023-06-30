@@ -5,3 +5,21 @@ Entity Class:
 endpoint:
 Attribute requestin icinde bir json dosya olusuyor Json dosyadaki her bir field aslinda bir Attribute oluyor.
 infinite loop durmadan bir birini cagiriyor
+
+Monolithic application, aralarinda loosing coupling iliskiler olan service katmalarina sahip, bu service katmalarindan
+herhangi birinde bir sorun olustugunda applicationun comple calismadigi bir yapi
+
+MicroService mimari. Uygulamadaki her bir service katmanini farkli DB lerde ayri bir application olarak calistiran
+herhangi bir service katmaninda bir sorun olustugunda diger service katmanlarinin calismaya devam ettigi calisan
+service katmanina hata olusan servis katmaninin kullanilacagi bir calisma oldugunda sadece hatanin olustugu servis
+katmanindaki is icin exception alindigi sistem.
+
+Service Discovery Farkli Db lerde bulunan MicroService lerin birbiri ile iliskilerinin devam etmesini saglayan
+bir santral yapi.
+
+API Gateway web kullanicisindan gelen requestleri ilgili microservice lere dagitan, microservice den donen response
+leride web kullanicisina yonlendiren santral yapi. Security bu applicationa kurulabilir web user den gelen tum
+requestler burada security edilir ve ilgli micro service uygulamsina gonderilir. security microservice uygulamarina da
+kurulabilir bu tamamen kisiel bir tercih
+
+Config Server MicroService application larini congigurasyonlarin toplandigi bir uygulama
