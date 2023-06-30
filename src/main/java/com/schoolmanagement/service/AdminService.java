@@ -165,6 +165,7 @@ public class AdminService {
         //Repo katmanina gitmeye gerek yok
     }
 
+    // Not: delete()********************************************************
     public String deleteAdmin(Long id) { // Original: public Object deleteAdmin(Long id)
                                          // Data type otomatik olrak Object geldi ResponseEntity normalde String donmesi
                                          // gerekiyor, Service katinda hem silme islemini hemde string olarak dondurme
